@@ -1,107 +1,203 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
 <title>KAM Performance Dashboard</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;600&display=swap">
 <style>
-/* Layout: sticky header with page tabs and filter bar, content in a centred 1280px column of cards. Navy and blue on a cool light ground. */
+/* Layout: one sticky tab bar over a 1240px column. Every page opens with the answer (a navy verdict band or a one-line lead), then the supporting numbers, then charts that each state their own takeaway. Data colours: blue = total revenue, orange = OTC, aqua = SaaS, violet = MRR. Green / amber / red are reserved for status. */
 :root{
-  --bg:#F4F6FA; --panel:#FFFFFF; --fg:#0F1F3D; --fg-muted:#566683; --line:#E0E6F0; --soft:#EAF0FB;
-  --navy:#0B2A5B; --blue:#2F6FDE; --sky:#8DB8F5;
+  --bg:#F3F6FB; --panel:#FFFFFF; --fg:#0E1B33; --fg-muted:#53627F; --line:#E1E7F1; --soft:#EDF2FA;
+  --navy:#0B2A5B; --band:#0B2A5B; --band-fg:#FFFFFF; --band-muted:#C5D5F2;
+  --total:#2a78d6; --otc:#eb6834; --saas:#1baf7a; --mrr:#6250d6; --tick:#0E1B33; --ghost:#B7C6DE; --slate:#7A8CA8;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#8D9BB3;
   --good:#0B7A4B; --good-bg:#E2F4EA; --warn:#8A5700; --warn-bg:#FFF0D1; --bad:#B42318; --bad-bg:#FDE6E3; --info-bg:#EAF0FB;
-  --otc:#0B2A5B; --saas:#2F6FDE; --mrr:#2BB3D6; --target:#C98A00;
-  --k1:#0B2A5B; --k2:#2F6FDE; --k3:#7FB2F0; --k4:#0F9D8A; --k5:#7B61C9; --k6:#8794A8; --k7:#C2410C;
+  --good-mark:#0ca30c; --warn-mark:#fab219; --bad-mark:#d03b3b;
+  --tipbg:#0E1B33; --tipfg:#FFFFFF;
   --font:'Public Sans','Noto Sans Bengali',system-ui,-apple-system,'Segoe UI',sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0A1222; --panel:#121C31; --fg:#E8EEF9; --fg-muted:#9DABC6; --line:#25334F; --soft:#1A2744;
-  --navy:#A9C2F3; --blue:#5B93F7; --sky:#35538F;
+  --navy:#A9C2F3; --band:#163266; --band-fg:#FFFFFF; --band-muted:#B7C9EC;
+  --total:#3987e5; --otc:#d95926; --saas:#199e70; --mrr:#9085e9; --tick:#E8EEF9; --ghost:#3A4D73; --slate:#6F82A3;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#6F82A3;
   --good:#4CC38A; --good-bg:#12372A; --warn:#F0B24A; --warn-bg:#3B2D0E; --bad:#FF8A7E; --bad-bg:#46201C; --info-bg:#1A2744;
-  --otc:#A9C2F3; --saas:#5B93F7; --mrr:#3CC3E6; --target:#F0B24A;
-  --k1:#A9C2F3; --k2:#5B93F7; --k3:#35538F; --k4:#3CC3B0; --k5:#A592E8; --k6:#8794A8; --k7:#F59E6A; color-scheme:dark}}
+  --tipbg:#E8EEF9; --tipfg:#0A1222; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0A1222; --panel:#121C31; --fg:#E8EEF9; --fg-muted:#9DABC6; --line:#25334F; --soft:#1A2744;
-  --navy:#A9C2F3; --blue:#5B93F7; --sky:#35538F;
+  --navy:#A9C2F3; --band:#163266; --band-fg:#FFFFFF; --band-muted:#B7C9EC;
+  --total:#3987e5; --otc:#d95926; --saas:#199e70; --mrr:#9085e9; --tick:#E8EEF9; --ghost:#3A4D73; --slate:#6F82A3;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#6F82A3;
   --good:#4CC38A; --good-bg:#12372A; --warn:#F0B24A; --warn-bg:#3B2D0E; --bad:#FF8A7E; --bad-bg:#46201C; --info-bg:#1A2744;
-  --otc:#A9C2F3; --saas:#5B93F7; --mrr:#3CC3E6; --target:#F0B24A;
-  --k1:#A9C2F3; --k2:#5B93F7; --k3:#35538F; --k4:#3CC3B0; --k5:#A592E8; --k6:#8794A8; --k7:#F59E6A; color-scheme:dark}
+  --tipbg:#E8EEF9; --tipfg:#0A1222; color-scheme:dark}
+
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.45;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
-.wrap{max-width:1280px;margin:0 auto}
-header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding:20px 0 10px}
-h1{font-size:24px;line-height:1.15;margin:0;color:var(--navy);font-weight:700;letter-spacing:-.01em;text-wrap:balance}
-.sub{color:var(--fg-muted);font-size:12.5px;margin-top:4px;max-width:70ch}
-.tools{display:flex;gap:8px;flex-wrap:wrap}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1240px;margin:0 auto}
 button,select,input{font:inherit;color:var(--fg)}
+:focus-visible{outline:2px solid var(--total);outline-offset:2px}
+.hide{display:none!important}
+.small{font-size:12px;color:var(--fg-muted)}
+code{background:var(--soft);padding:1px 5px;border-radius:5px;font-size:12px}
+.up{color:var(--good)}.down{color:var(--bad)}.ok{color:var(--good);font-weight:700}.fail{color:var(--bad);font-weight:700}
+
+/* header and tabs */
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding:22px 0 12px}
+h1{font-size:23px;line-height:1.15;margin:0;color:var(--navy);font-weight:700;letter-spacing:-.015em;text-wrap:balance}
+.sub{color:var(--fg-muted);font-size:12.5px;margin-top:5px;max-width:84ch}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
 .btn{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:500}
-.btn:hover{border-color:var(--blue)}
+.btn:hover{border-color:var(--total)}
+.btn[aria-expanded="true"]{background:var(--soft);border-color:var(--total)}
 .btn.primary{background:var(--navy);color:var(--bg);border-color:var(--navy)}
-:root[data-theme="dark"] .btn.primary,:root:not([data-theme="light"]) .btn.primary{color:#0A1222}
-:root[data-theme="light"] .btn.primary{color:#fff}
-:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-nav.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
-nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 14px;cursor:pointer;white-space:nowrap;color:var(--fg-muted);font-weight:600}
-nav.tabs button[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--blue)}
-.filters{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end;padding:14px 0}
-.filters label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--fg-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.filters select,.filters input[type=date]{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 9px;min-width:130px;text-transform:none;letter-spacing:0;font-weight:500}
-.banner{background:var(--info-bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.link{background:none;border:0;padding:0;color:var(--total);font-weight:600;cursor:pointer;text-align:left}
+.link:hover{text-decoration:underline}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:9}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:12px 14px;cursor:pointer;white-space:nowrap;color:var(--fg-muted);font-weight:600}
+nav.tabs button:hover{color:var(--fg)}
+nav.tabs button[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--total)}
+.gloss{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.gloss dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px 28px;margin:0}
+.gloss dt{font-weight:700;color:var(--navy)}
+.gloss dd{margin:0 0 2px;color:var(--fg-muted);font-size:13px}
+
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end;padding:16px 0 6px}
+.filters label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--fg-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.filters .range{display:flex;gap:10px;flex-wrap:wrap}
+.filters select,.filters input[type=date]{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 9px;min-width:140px;text-transform:none;letter-spacing:0;font-weight:500}
+.filters select:disabled{opacity:.5}
+.ctx{color:var(--fg-muted);font-size:12.5px;padding:2px 0 12px}
+.ctx b{color:var(--fg);font-weight:600}
+
+/* banners, page lead */
+.banner{background:var(--info-bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px}
 .banner.warn{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.lead{margin:4px 0 14px}
+.lead h2{margin:0;font-size:20px;line-height:1.25;font-weight:650;letter-spacing:-.01em;text-wrap:balance}
+.lead p{margin:4px 0 0;color:var(--fg-muted);font-size:13.5px;max-width:90ch}
+.sec{margin:26px 0 10px;display:flex;flex-direction:column;gap:2px}
+.sec h2{margin:0;font-size:16px;font-weight:700;color:var(--navy)}
+.sec p{margin:0;color:var(--fg-muted);font-size:13px}
+
+/* verdict band */
+.band{background:var(--band);color:var(--band-fg);border-radius:16px;padding:22px 26px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:20px 44px;align-items:center;--band-fill:#8DB8F5}
+.band[data-st="good"]{--band-fill:#4CD28F}.band[data-st="warn"]{--band-fill:#FAB219}.band[data-st="bad"]{--band-fill:#FF8A7E}
+.band-label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--band-muted);font-weight:600}
+.band-num{font-size:clamp(36px,6vw,54px);font-weight:700;letter-spacing:-.025em;line-height:1.05;margin:6px 0 4px}
+.band-full{color:var(--band-muted);font-size:13px}
+.band-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:600;font-size:15px}
+.track{position:relative;height:14px;border-radius:99px;background:rgba(255,255,255,.18)}
+.track i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--band-fill);min-width:4px}
+.track b{position:absolute;top:-6px;bottom:-6px;width:3px;margin-left:-1.5px;border-radius:2px;background:#fff}
+.band-foot{display:flex;flex-wrap:wrap;gap:4px 18px;justify-content:space-between;margin-top:12px;font-weight:600}
+.band-foot span:last-child{font-weight:500;color:var(--band-muted)}
+.band-key{margin-top:10px;font-size:12px;color:var(--band-muted)}
+.band .pill{background:rgba(255,255,255,.14);color:#fff}
+.band .pill.good{background:#0F3D2C;color:#8FE9BC}.band .pill.warn{background:#4A3600;color:#FFD274}.band .pill.bad{background:#5A1F1A;color:#FFB4AB}
+
+/* stat strip */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0}
+.stat{background:var(--panel);padding:14px 16px;min-width:0}
+.stat .k{font-size:12px;color:var(--fg-muted);font-weight:600;display:flex;align-items:center;gap:6px}
+.stat .v{font-size:25px;font-weight:700;letter-spacing:-.015em;margin-top:2px;overflow-wrap:anywhere}
+.stat .m{font-size:12px;color:var(--fg-muted);margin-top:2px}
+.sw{display:inline-block;width:9px;height:9px;border-radius:3px;flex:none}
+
+/* cards and charts */
 .grid{display:grid;gap:14px}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));margin-bottom:14px}
 .two{grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr))}
-.three{grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr))}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
-.card h3{margin:0 0 2px;font-size:14.5px;font-weight:650;color:var(--fg)}
-.card .note{color:var(--fg-muted);font-size:12px;margin:0 0 10px}
-.kpi{padding:14px 16px}
-.kpi .lbl{font-size:11.5px;color:var(--fg-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.kpi .val{font-size:26px;font-weight:700;color:var(--navy);margin-top:4px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
-.kpi .meta{font-size:12px;color:var(--fg-muted);margin-top:2px;min-height:17px}
-.kpi.hero{background:#0B2A5B;border-color:#0B2A5B}
-:root[data-theme="dark"] .kpi.hero{background:#1B3A7A;border-color:#1B3A7A}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kpi.hero{background:#1B3A7A;border-color:#1B3A7A}}
-.kpi.hero .lbl,.kpi.hero .meta{color:#D5E1F8}.kpi.hero .val{color:#fff}
-.chartbox{position:relative;height:270px}
-.chartbox.tall{height:340px}
-.up{color:var(--good)}.down{color:var(--bad)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0}
+.eyebrow{font-size:11.5px;color:var(--fg-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.take{margin:3px 0 2px;font-size:16.5px;line-height:1.3;font-weight:650;letter-spacing:-.005em;text-wrap:balance}
+.note{color:var(--fg-muted);font-size:12.5px;margin:2px 0 8px}
+.chartbox{position:relative;height:290px;margin-top:8px}
+.chartbox.tall{height:380px}
+.attn ul{list-style:none;margin:8px 0 6px;padding:0}
+.attn li{display:grid;grid-template-columns:78px minmax(0,1fr);gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+
+/* pills */
 .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650;white-space:nowrap}
 .pill.good{background:var(--good-bg);color:var(--good)}.pill.warn{background:var(--warn-bg);color:var(--warn)}
 .pill.bad{background:var(--bad-bg);color:var(--bad)}.pill.info{background:var(--info-bg);color:var(--navy)}.pill.mute{background:var(--soft);color:var(--fg-muted)}
+
+/* ranked bars (categories) */
+.rb{display:grid;gap:12px;margin-top:12px}
+.rb-row{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) minmax(120px,auto);gap:4px 14px;align-items:center}
+.rb-name{font-weight:600}
+.rb-bar{height:10px;background:var(--soft);border-radius:99px;overflow:hidden}
+.rb-bar i{display:block;height:100%;background:var(--total);border-radius:99px}
+.rb-val{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rb-val small{color:var(--fg-muted);margin-left:6px}
+
+/* KAM leaderboard */
+.lbbox{margin-top:6px}
+.lb-head,.lb{display:grid;grid-template-columns:28px minmax(120px,1.1fr) minmax(150px,2fr) minmax(104px,.9fr) 56px minmax(124px,auto);gap:4px 16px;align-items:center;padding:11px 12px}
+.lb-head{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-muted);font-weight:600;padding-block:6px}
+.lb-head span:nth-child(5){text-align:right}
+.lb{width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);cursor:pointer;color:inherit}
+.lb:hover,.lb.sel{background:var(--soft)}
+.lb.zero{opacity:.78}
+.lb .rk{color:var(--fg-muted);font-weight:600;font-variant-numeric:tabular-nums}
+.lb b{display:block;font-weight:650}
+.lb small{display:block;color:var(--fg-muted);font-size:12px}
+.lb .pc{text-align:right;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.lb.static{cursor:default}.lb.static:hover{background:none}
+.lb.total{font-weight:650;border-top:2px solid var(--line)}
+.meter{position:relative;height:10px;border-radius:99px;background:var(--soft)}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--total);min-width:3px}
+.meter.good i{background:var(--good-mark)}.meter.warn i{background:var(--warn-mark)}.meter.bad i{background:var(--bad-mark)}
+.meter b{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--fg);border-radius:1px}
+.meter.none{height:auto;background:none;border:1px dashed var(--line);padding:1px 10px;font-size:11.5px;color:var(--fg-muted);width:max-content;max-width:100%}
+.keyline{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--fg-muted);margin:6px 0 4px}
+.keyline span{display:inline-flex;align-items:center;gap:6px}
+.keyline .k-bar{width:26px;height:8px;border-radius:99px;background:var(--good-mark)}
+.keyline .k-tick{width:2px;height:14px;background:var(--fg)}
+
+/* tables */
 .tw{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
-th,td{padding:8px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th{font-size:11.5px;color:var(--fg-muted);font-weight:650;text-transform:uppercase;letter-spacing:.03em;background:var(--panel);position:sticky;top:0}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11.5px;color:var(--fg-muted);font-weight:650;text-transform:uppercase;letter-spacing:.03em;background:var(--panel)}
 th:first-child,td:first-child,th.l,td.l{text-align:left}
 tr.click{cursor:pointer}tr.click:hover td{background:var(--soft)}
 tr.zero td{background:var(--bad-bg)}
 tr.total td{font-weight:700;border-top:2px solid var(--line)}
-.kcards{grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr))}
-.kc{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel);cursor:pointer;text-align:left;width:100%}
-.kc:hover{border-color:var(--blue)}.kc.sel{border-color:var(--blue);box-shadow:0 0 0 2px var(--soft)}
-.kc .nm{display:flex;justify-content:space-between;gap:8px;align-items:center;font-weight:650}
-.kc .big{font-size:20px;font-weight:700;color:var(--navy);margin:6px 0 2px;font-variant-numeric:tabular-nums}
-.bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin:6px 0 4px}
-.bar>i{display:block;height:100%;border-radius:99px;background:var(--blue)}
-.bar.good>i{background:var(--good)}.bar.warn>i{background:var(--target)}.bar.bad>i{background:var(--bad)}
-.kc .sm{font-size:12px;color:var(--fg-muted);display:flex;justify-content:space-between;gap:8px}
-.ins{list-style:none;padding:0;margin:0;display:grid;gap:8px}
-.ins li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
-.ins .t{font-weight:600}.ins .a{color:var(--fg-muted);font-size:13px;margin-top:2px}
-.sec{margin:22px 0 10px;font-size:15px;color:var(--navy);font-weight:700}
+details.more{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+details.more>summary{cursor:pointer;padding:12px 16px;font-weight:600;color:var(--navy)}
+details.more>div{padding:0 16px 16px}
+.card details.more{background:none;border:0;border-top:1px solid var(--line);border-radius:0;margin-top:14px}
+.card details.more>summary{padding:12px 0 4px}
+.card details.more>div{padding:0 0 4px}
+
+/* insights */
+.ins{list-style:none;padding:0;margin:6px 0 0}
+.ins li{display:grid;grid-template-columns:82px minmax(0,1fr);gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.ins .t{font-weight:600;font-size:14.5px}
+.ins .a{color:var(--fg-muted);font-size:13px;margin-top:3px}
+.ins .a b{color:var(--fg);font-weight:600}
+
+/* data page */
 .chk{display:flex;align-items:center;gap:8px;padding:4px 0}
 .chk input{width:16px;height:16px}
 .rules{display:grid;gap:4px 24px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
-.small{font-size:12px;color:var(--fg-muted)}
 .mapgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
 .mapgrid label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--fg-muted);font-weight:600}
 .mapgrid select{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
-code{background:var(--soft);padding:1px 5px;border-radius:5px;font-size:12px}
-.hide{display:none!important}
-.ok{color:var(--good);font-weight:700}.fail{color:var(--bad);font-weight:700}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
-@media (max-width:640px){h1{font-size:20px}.kpi .val{font-size:22px}.chartbox{height:240px}}
+
+@media (max-width:860px){.band{grid-template-columns:minmax(0,1fr);padding:18px}}
+@media (max-width:720px){
+  h1{font-size:20px}.lead h2{font-size:18px}.stat .v{font-size:22px}.chartbox{height:260px}.chartbox.tall{height:340px}
+  .lb-head{display:none}
+  .lb{grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"rk nm pl" "mt mt mt" "am am pc";padding:12px 4px}
+  .lb .rk{grid-area:rk}.lb .nm{grid-area:nm}.lb .pl{grid-area:pl}.lb .meter{grid-area:mt}.lb .amt{grid-area:am}.lb .pc{grid-area:pc}
+  .rb-row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"nm vl" "br br"}
+  .rb-row .rb-name{grid-area:nm}.rb-row .rb-val{grid-area:vl}.rb-row .rb-bar{grid-area:br}
+  .attn li,.ins li{grid-template-columns:minmax(0,1fr)}
+  .ins li{gap:6px}
+}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
 </style>
 
 <div class="wrap" id="app">
@@ -111,27 +207,46 @@ code{background:var(--soft);padding:1px 5px;border-radius:5px;font-size:12px}
       <div class="sub" id="srcline">Loading data</div>
     </div>
     <div class="tools">
+      <button class="btn" id="btnGloss" type="button" aria-expanded="false" aria-controls="gloss">What do the terms mean?</button>
       <button class="btn" id="btnRules" type="button">Reporting rules</button>
-      <button class="btn" id="btnTheme" type="button">Theme</button>
+      <button class="btn" id="btnTheme" type="button">Light / dark</button>
     </div>
   </header>
   <nav class="tabs" role="tablist" id="tabs">
-    <button role="tab" data-page="overview" aria-selected="true">Management overview</button>
+    <button role="tab" data-page="overview" aria-selected="true">Overview</button>
     <button role="tab" data-page="kam" aria-selected="false">KAM performance</button>
     <button role="tab" data-page="product" aria-selected="false">Product and revenue</button>
-    <button role="tab" data-page="growth" aria-selected="false">Growth analytics</button>
+    <button role="tab" data-page="growth" aria-selected="false">Growth</button>
     <button role="tab" data-page="actions" aria-selected="false">Action plan</button>
     <button role="tab" data-page="data" aria-selected="false">Data health and import</button>
   </nav>
 
+  <div class="gloss" id="gloss" hidden>
+    <dl>
+      <div><dt>WO (work order)</dt><dd>One counted sale from the Odoo export. Only work orders that pass the reporting rules are counted.</dd></div>
+      <div><dt>Total WO value (revenue won)</dt><dd>OTC plus SaaS. MRR is never added on top.</dd></div>
+      <div><dt>OTC</dt><dd>One-time revenue: devices and other one-time charges.</dd></div>
+      <div><dt>SaaS</dt><dd>Software plan revenue. API packages are included here, not counted again.</dd></div>
+      <div><dt>MRR</dt><dd>Monthly recurring revenue. Shown on its own because it is a recurring figure, not part of Total WO value.</dd></div>
+      <div><dt>KAM</dt><dd>Key account manager: the salesperson a work order is credited to.</dd></div>
+      <div><dt>Target achievement</dt><dd>Total WO value divided by the assigned target.</dd></div>
+      <div><dt>Pace</dt><dd>How far through the month we are. At 17% of the month, a KAM on pace has reached about 17% of target.</dd></div>
+      <div><dt>MTD / MoM</dt><dd>Month to date (a month still in progress) and month on month (compared with the previous month).</dd></div>
+      <div><dt>L and Cr</dt><dd>L is lakh (1,00,000). Cr is crore (1,00,00,000). Example: ৳2.50 L is ৳250,000.</dd></div>
+    </dl>
+  </div>
+
   <div class="filters" id="filters">
     <label>Month<select id="fMonth"></select></label>
-    <label>From<input type="date" id="fFrom" min="2020-01-01" max="2099-12-31"></label>
-    <label>To<input type="date" id="fTo" min="2020-01-01" max="2099-12-31"></label>
+    <span class="range" id="rangeWrap" hidden>
+      <label>From<input type="date" id="fFrom" min="2020-01-01" max="2099-12-31"></label>
+      <label>To<input type="date" id="fTo" min="2020-01-01" max="2099-12-31"></label>
+    </span>
     <label id="lblKam">KAM<select id="fKam"></select></label>
     <label>Business category<select id="fCh"></select></label>
     <button class="btn" id="fReset" type="button">Reset</button>
   </div>
+  <div class="ctx" id="ctx"></div>
   <div id="banners"></div>
 
   <section id="p-overview" data-pg></section>
@@ -143,7 +258,6 @@ code{background:var(--soft);padding:1px 5px;border-radius:5px;font-size:12px}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 "use strict";
 /* ========================= DATA SOURCE LAYER =========================
@@ -186,7 +300,7 @@ const CFG={start:'2026-07-01',tickets:new Set(['SA Done']),orders:new Set(['Sale
 const MAP={kam:{'Shahin':'Shahinur'},
   channel:{'SME':'SME','Retention':'Retention','Partner':'Partner','SME Partner':'Partner','Enterprise':'Enterprise','Distribution':'Distribution','Distribution Bulk':'Distribution','Touch Less':'Touch Less','Touch less':'Touch Less','Support Request':'Support Request'}};
 const F={from:'',to:'',month:'',kam:'all',ch:'all'};
-let S={all:[],q:[],roster:[],months:[],tIdx:{},focusKam:null,asOf:'2026-11-05'};
+let S={all:[],q:[],roster:[],months:[],tIdx:{},focusKam:null,asOf:'2026-11-05',kamOrder:[]};
 let currentPage='overview';
 const charts={};
 
@@ -199,8 +313,12 @@ const taka=v=>sgn(v)+'৳'+nfIN.format(Math.abs(Math.round(v||0)));
 function takaC(v){v=v||0;const a=Math.abs(v);if(a>=1e7)return sgn(v)+'৳'+(a/1e7).toFixed(2)+' Cr';if(a>=1e5)return sgn(v)+'৳'+(a/1e5).toFixed(2)+' L';return sgn(v)+'৳'+nfIN.format(Math.round(a));}
 const pct=v=>(v==null||!isFinite(v))?'n/a':v.toFixed(2)+'%';
 const spct=v=>(v==null||!isFinite(v))?'n/a':(v>0?'+':'')+v.toFixed(2)+'%';
+const pctS=v=>(v==null||!isFinite(v))?'n/a':(Math.abs(v)<10?v.toFixed(1):String(Math.round(v)))+'%';
+const pct0=v=>(v==null||!isFinite(v))?'n/a':Math.round(v)+'%';
+const spct0=v=>{if(v==null||!isFinite(v))return 'n/a';const r=Math.round(v);return (r>0?'+':'')+r+'%';};
 const num=v=>nfIN.format(Math.round(v||0));
 const div=(a,b)=>(b>0?a/b:null);
+const share=(a,b)=>(b>0?a/b*100:null);
 const ym=d=>d.slice(0,7);
 const mLabel=m=>MONTHS[+m.slice(5,7)-1]+' '+m.slice(0,4);
 const lastDay=m=>new Date(+m.slice(0,4),+m.slice(5,7),0).getDate();
@@ -221,7 +339,13 @@ function parseDate(v){
   const d=new Date(s);if(!isNaN(d))return iso(d.getFullYear(),d.getMonth()+1,d.getDate());
   return null;
 }
-function tip(el){return el;}
+const plural=(n,w)=>n+' '+w+(n===1?'':'s');
+const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+let _xlsx;
+function ensureXLSX(){
+  if(window.XLSX)return Promise.resolve();
+  return _xlsx||(_xlsx=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=res;s.onerror=()=>{_xlsx=null;rej(new Error('Could not load the Excel reader. Check the connection and try again.'));};document.head.appendChild(s);}));
+}
 
 /* ========================= NORMALISE ========================= */
 function normalise(){
@@ -256,6 +380,9 @@ function applyRules(){
   const first=[CFG.start.slice(0,7),...have,...tm].sort()[0];
   const last=[maxM,...have,...tm].sort().slice(-1)[0];
   S.months=monthRange(first,last);
+  // stable KAM order (all-time revenue) so chart colours do not change with filters
+  const tot=groupBy(S.q,r=>r.kam);
+  S.kamOrder=[...tot.entries()].sort((a,b)=>b[1].total-a[1].total).map(x=>x[0]);
 }
 
 /* ========================= TARGETS ========================= */
@@ -285,7 +412,9 @@ function period(){
   const partial=(S.asOf<=to&&ym(S.asOf)===ref&&S.asOf<ref+'-'+String(lastDay(ref)).padStart(2,'0'))||false;
   const label=(months.length===1&&from===months[0]+'-01'&&to>=months[0]+'-'+String(lastDay(months[0])).padStart(2,'0')||months.length===1&&partial)?mLabel(months[0])+(partial?' (month to date)':''):from+' to '+to;
   const dayN=+S.asOf.slice(8,10),dim=lastDay(ref);
-  return {from,to,months,ref,partial,label,elapsed:partial?dayN/dim:1,dayN,dim};
+  const elapsed=partial?dayN/dim:1;
+  const pace=partial?(months.length-1+elapsed)/months.length:1;   // share of the period's targets that should be done by today
+  return {from,to,months,ref,partial,label,elapsed,pace,dayN,dim};
 }
 function rowsFor(P,o={}){
   const kam=o.kam!==undefined?o.kam:F.kam,ch=o.ch!==undefined?o.ch:F.ch;
@@ -297,94 +426,84 @@ function rowsMonth(m,o={}){
 }
 function monthSeries(o={}){return S.months.map(m=>({m,a:agg(rowsMonth(m,o)),t:monthTarget(m,o.kam!==undefined?o.kam:F.kam,o.ch!==undefined?o.ch:F.ch)}));}
 const isPartialMonth=m=>ym(S.asOf)===m&&S.asOf<m+'-'+String(lastDay(m)).padStart(2,'0');
-function kamStatus(ach,wo,elapsed){
+/* status of a KAM or the company against target. pace = share of the period that has passed (1 when complete) */
+function kamStatus(ach,wo,pace){
   if(wo===0)return {cls:'bad',txt:'No work orders'};
   if(ach==null)return {cls:'mute',txt:'No target'};
-  if(ach>=100)return {cls:'good',txt:'Target achieved'};
-  if(ach>=60*elapsed)return {cls:'warn',txt:elapsed<1?'On pace':'Moderate'};
-  return {cls:'bad',txt:'Below target'};
+  if(ach>=100)return {cls:'good',txt:'Target met'};
+  if(pace<1){
+    const p=pace*100;
+    if(ach>=p)return {cls:'good',txt:'Ahead of pace'};
+    if(ach>=60*pace)return {cls:'warn',txt:'Slightly behind'};
+    return {cls:'bad',txt:'Behind pace'};
+  }
+  return ach>=60?{cls:'warn',txt:'Short of target'}:{cls:'bad',txt:'Well short'};
 }
 
-/* ========================= CHARTS ========================= */
-function theme(){return{fg:cssv('--fg-muted'),grid:cssv('--line'),ink:cssv('--fg'),otc:cssv('--otc'),saas:cssv('--saas'),mrr:cssv('--mrr'),target:cssv('--target'),
-  k:['--k1','--k2','--k3','--k4','--k5','--k6','--k7'].map(cssv),good:cssv('--good'),bad:cssv('--bad'),panel:cssv('--panel')};}
+/* ========================= CHART INFRASTRUCTURE ========================= */
+function theme(){return{fg:cssv('--fg-muted'),grid:cssv('--line'),ink:cssv('--fg'),total:cssv('--total'),otc:cssv('--otc'),saas:cssv('--saas'),mrr:cssv('--mrr'),tick:cssv('--tick'),ghost:cssv('--ghost'),slate:cssv('--slate'),
+  s:['--s1','--s2','--s3','--s4','--s5'].map(cssv),other:cssv('--s6'),good:cssv('--good-mark'),warn:cssv('--warn-mark'),bad:cssv('--bad-mark'),panel:cssv('--panel'),tipbg:cssv('--tipbg'),tipfg:cssv('--tipfg')};}
+/* prints value labels on bars/points, and a total above stacked columns. Skips labels when a slot is too narrow to hold them. */
+const valueLabels={id:'valueLabels',afterDatasetsDraw(c,_a,o){
+  if(!o||!o.fmt)return;
+  const horiz=c.options.indexAxis==='y',n=c.data.labels.length;if(!n)return;
+  const slot=(horiz?c.chartArea.height:c.chartArea.width)/n;
+  if(!horiz&&slot<(o.minSlot||66))return;
+  if(horiz&&slot<16)return;
+  const ctx=c.ctx;ctx.save();ctx.font='600 11px '+Chart.defaults.font.family;ctx.fillStyle=cssv('--fg');
+  const draw=(txt,x,y,neg)=>{if(horiz){ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(txt,x+6,y);}else{ctx.textAlign='center';ctx.textBaseline=neg?'top':'bottom';ctx.fillText(txt,x,neg?y+4:y-4);}};
+  const isMark=ds=>!(ds.type==='line'&&ds.showLine===false);
+  if(o.stack){
+    for(let j=0;j<n;j++){let sum=0,edge=horiz?-Infinity:Infinity,pos=0;
+      c.data.datasets.forEach((ds,i)=>{const m=c.getDatasetMeta(i);if(m.hidden||!isMark(ds))return;const v=ds.data[j];if(v==null)return;sum+=v;const el=m.data[j];if(!el)return;
+        if(horiz){if(el.x>edge){edge=el.x;pos=el.y;}}else if(el.y<edge){edge=el.y;pos=el.x;}});
+      if(sum>0&&isFinite(edge))horiz?draw(o.fmt(sum),edge,pos):draw(o.fmt(sum),pos,edge);}
+  }else{
+    c.data.datasets.forEach((ds,i)=>{if(o.only&&!o.only.includes(i))return;if(!isMark(ds))return;const m=c.getDatasetMeta(i);if(m.hidden)return;
+      m.data.forEach((el,j)=>{const v=ds.data[j];if(v==null||(o.skipZero&&!v))return;draw(o.fmt(v),el.x,el.y,v<0);});});
+  }
+  ctx.restore();}};
+Chart.register(valueLabels);
 function chart(id,cfg){
   const el=document.getElementById(id);if(!el)return;
   if(charts[id]){charts[id].destroy();delete charts[id];}
-  const T=theme();Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;Chart.defaults.color=T.fg;Chart.defaults.borderColor=T.grid;
-  cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false}},cfg.options||{});
-  cfg.options.plugins=Object.assign({legend:{position:'bottom',labels:{boxWidth:12,color:T.fg}}},cfg.options.plugins||{});
+  const T=theme();
+  Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;Chart.defaults.font.size=12;Chart.defaults.color=T.fg;Chart.defaults.borderColor=T.grid;
+  cfg.data.datasets.forEach(d=>{if((d.type||cfg.type)==='bar'&&!d.pointStyle)d.pointStyle='rectRounded';});
+  cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false},layout:{padding:{top:20,right:8}}},cfg.options||{});
+  const pl=cfg.options.plugins=cfg.options.plugins||{};
+  pl.legend=Object.assign({display:cfg.data.datasets.length>1,position:'top',align:'start',labels:{usePointStyle:true,boxWidth:9,boxHeight:9,padding:14,color:T.ink}},pl.legend||{});
+  pl.tooltip=Object.assign({backgroundColor:T.tipbg,titleColor:T.tipfg,bodyColor:T.tipfg,padding:10,cornerRadius:8,boxPadding:4},pl.tooltip||{});
   charts[id]=new Chart(el,cfg);
 }
-const yMoney={ticks:{callback:v=>takaC(v)},grid:{color:()=>cssv('--line')}};
+const yMoneyAx=()=>({beginAtZero:true,border:{display:false},grid:{color:cssv('--line')},ticks:{callback:v=>takaC(v),maxTicksLimit:6}});
+const xMoneyAx=()=>({beginAtZero:true,border:{display:false},grid:{color:cssv('--line')},ticks:{callback:v=>takaC(v),maxTicksLimit:6}});
+const yPctAx=(o={})=>Object.assign({border:{display:false},grid:{color:cssv('--line')},ticks:{callback:v=>v+'%',maxTicksLimit:7}},o);
+const xCatAx=(o={})=>Object.assign({grid:{display:false},border:{color:cssv('--line')},ticks:{autoSkip:false,maxRotation:0,minRotation:0}},o);
+const yCatAx=(o={})=>Object.assign({grid:{display:false},border:{display:false},ticks:{autoSkip:false}},o);
+const yCountAx=()=>({beginAtZero:true,border:{display:false},grid:{color:cssv('--line')},ticks:{precision:0,maxTicksLimit:6}});
 const tipMoney={callbacks:{label:c=>' '+c.dataset.label+': '+(c.dataset.isPct?pct(c.parsed.y):c.dataset.isNum?num(c.parsed.y):taka(c.parsed.y))}};
-const tipH={callbacks:{label:c=>' '+c.dataset.label+': '+taka(c.parsed.x)}};
+const tipH={callbacks:{label:c=>' '+c.dataset.label+': '+(c.dataset.isNum?num(c.parsed.x):c.dataset.isPct?pct(c.parsed.x):taka(c.parsed.x))}};
 const mlab=m=>mLabel(m)+(isPartialMonth(m)?' (MTD)':'');
-const box=(id,cls='')=>`<div class="chartbox ${cls}"><canvas id="${id}" role="img" aria-label="${id}"></canvas></div>`;
-function kpi(lbl,val,meta,cls=''){return `<div class="card kpi ${cls}"><div class="lbl">${lbl}</div><div class="val">${val}</div><div class="meta">${meta||''}</div></div>`;}
-function table(cols,rows,opts={}){
+const mlabA=m=>[MONTHS[+m.slice(5,7)-1],m.slice(0,4)].concat(isPartialMonth(m)?['MTD']:[]);   // short stacked label so axis text stays horizontal
+const tickMark=(color,count)=>({type:'line',showLine:false,borderColor:color,backgroundColor:color,pointBorderColor:color,pointStyle:'line',pointBorderWidth:3,
+  pointRadius:c=>{const a=c.chart.chartArea;return a?Math.max(10,Math.min(32,a.width/Math.max(1,count)*.3)):16;},
+  pointHoverRadius:c=>{const a=c.chart.chartArea;return a?Math.max(10,Math.min(32,a.width/Math.max(1,count)*.3)):16;},order:0});
+
+/* ========================= SMALL BUILDERS ========================= */
+const sw=c=>`<i class="sw" style="background:${c}"></i>`;
+function stat(lbl,val,meta,color){return `<div class="stat"><div class="k">${color?sw(color):''}${lbl}</div><div class="v">${val}</div><div class="m">${meta||''}</div></div>`;}
+function chartCard(id,eyebrow,take,note,aria,cls=''){
+  return `<div class="card"><div class="eyebrow">${eyebrow}</div><h3 class="take">${take}</h3>${note?`<p class="note">${note}</p>`:''}<div class="chartbox ${cls}"><canvas id="${id}" role="img" aria-label="${esc(aria||eyebrow)}"></canvas></div></div>`;
+}
+function table(cols,rows){
   return `<div class="tw"><table><thead><tr>${cols.map(c=>`<th class="${c.l?'l':''}">${esc(c.h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr class="${r._cls||''}" ${r._attr||''}>${cols.map(c=>`<td class="${c.l?'l':''}">${c.f?c.f(r):esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
+const more=(summary,html,open)=>`<details class="more" ${open?'open':''}><summary>${summary}</summary><div>${html}</div></details>`;
+const lead=(h,p)=>`<div class="lead"><h2>${h}</h2>${p?`<p>${p}</p>`:''}</div>`;
+const pill=st=>`<span class="pill ${st.cls}">${esc(st.txt)}</span>`;
 
-/* ========================= PAGE 1: OVERVIEW ========================= */
-function renderOverview(){
-  const P=period();const rows=rowsFor(P);const a=agg(rows);
-  const {t,covered}=periodTarget(P,F.kam,F.ch);
-  const actCov=covered.length?agg(rows.filter(r=>covered.includes(r.m))):null;
-  const ach=t&&t.total>0?actCov.total/t.total*100:null;
-  const gap=t?t.total-(actCov?actCov.total:0):null;
-  const cur=agg(rowsMonth(P.ref)),prev=agg(rowsMonth(addMonth(P.ref,-1)));
-  const mom=prev.total>0?(cur.total-prev.total)/prev.total*100:null;
-  let lfl=null;
-  if(P.partial){const pm=addMonth(P.ref,-1),d=P.dayN;const p2=agg(S.q.filter(r=>r.m===pm&&+r.date.slice(8,10)<=d&&(F.kam==='all'||r.kam===F.kam)&&(F.ch==='all'||r.ch===F.ch)));lfl={prev:p2,g:p2.total>0?(cur.total-p2.total)/p2.total*100:null,d};}
-  const momTxt=mom==null?'n/a':spct(mom);
-  const tgtNote=t?(covered.length<P.months.length?'Target covers '+covered.map(mLabel).join(', ')+' only':(F.kam!=='all'?'KAM target':F.ch!=='all'?'Channel target':'Sum of KAM targets')):(F.kam!=='all'&&F.ch!=='all'?'No target at KAM and channel level':'No target loaded for this period');
-  $('#p-overview').innerHTML=`
-  <div class="grid kpis">
-    ${kpi('Total WO value',takaC(a.total),taka(a.total)+' (OTC + SaaS)','hero')}
-    ${kpi('Total WO quantity',num(a.n),'Qualifying work orders')}
-    ${kpi(P.months.length>1?'Period target':'Monthly target',t?takaC(t.total):'n/a',tgtNote)}
-    ${kpi('Target achievement',pct(ach),ach==null?'Needs a target for the period':(P.partial?'Month to date, '+pct(P.elapsed*100)+' of month elapsed':'Of target'))}
-    ${kpi('Remaining target gap',gap==null?'n/a':(gap>0?takaC(gap):'Target met'),gap==null?'':gap>0?'Still to win':(takaC(-gap)+' above target'))}
-    ${kpi('OTC revenue',takaC(a.otc),taka(a.otc)+' (devices and one-time)')}
-    ${kpi('SaaS revenue',takaC(a.saas),taka(a.saas)+' (API included)')}
-    ${kpi('MRR',takaC(a.mrr),'Recurring, not added to total')}
-    ${kpi('Average WO value',a.n?takaC(a.total/a.n):'n/a','Total WO value / WO count')}
-    ${kpi('Month on month growth',momTxt,mom==null?(prev.total===0?'No previous month value':''):mLabel(P.ref)+' vs '+mLabel(addMonth(P.ref,-1)))}
-  </div>
-  ${lfl?`<div class="banner warn">${mLabel(P.ref)} is a month in progress (day ${P.dayN} of ${P.dim}), so month on month growth against a full month is misleading. Like for like, days 1 to ${lfl.d} of ${mLabel(addMonth(P.ref,-1))} were ${taka(lfl.prev.total)} against ${taka(cur.total)} now (${lfl.g==null?'n/a':spct(lfl.g)}).</div>`:''}
-  <div class="grid two">
-    <div class="card"><h3>Actual revenue vs target</h3><p class="note">Total WO value against the assigned target for each month. Months without a target show actuals only.</p>${box('cOvT')}</div>
-    <div class="card"><h3>Monthly revenue trend</h3><p class="note">Total WO value (OTC + SaaS). The latest bar is month to date.</p>${box('cOvTrend')}</div>
-    <div class="card"><h3>Revenue composition</h3><p class="note">OTC, SaaS and MRR shown separately. MRR is a recurring metric and is not part of Total WO value.</p>${box('cOvComp')}</div>
-    <div class="card"><h3>Monthly WO quantity</h3><p class="note">Qualifying work orders per month.</p>${box('cOvQty')}</div>
-    <div class="card" style="grid-column:1/-1"><h3>Revenue contribution by business category</h3><p class="note">${esc(P.label)}. Sales channel is used as the business category because the export has no product category column.</p><div id="chShare"></div></div>
-  </div>`;
-  const ms=monthSeries();const T=theme();const labels=ms.map(x=>mlab(x.m));
-  chart('cOvT',{type:'bar',data:{labels,datasets:[
-    {label:'Actual',data:ms.map(x=>x.a.total),backgroundColor:T.saas,borderRadius:4},
-    {label:'Target',data:ms.map(x=>x.t?x.t.total:null),backgroundColor:T.target,borderRadius:4}]},
-    options:{scales:{y:yMoney},plugins:{tooltip:tipMoney}}});
-  chart('cOvTrend',{type:'line',data:{labels,datasets:[{label:'Total WO value',data:ms.map(x=>x.a.total),borderColor:T.otc,backgroundColor:T.otc+'22',fill:true,tension:0,pointRadius:4,borderWidth:2.5}]},
-    options:{scales:{y:Object.assign({beginAtZero:true},yMoney)},plugins:{legend:{display:false},tooltip:tipMoney}}});
-  chart('cOvComp',{type:'bar',data:{labels,datasets:[
-    {label:'OTC',data:ms.map(x=>x.a.otc),backgroundColor:T.otc,borderRadius:3},
-    {label:'SaaS',data:ms.map(x=>x.a.saas),backgroundColor:T.saas,borderRadius:3},
-    {label:'MRR',data:ms.map(x=>x.a.mrr),backgroundColor:T.mrr,borderRadius:3}]},
-    options:{scales:{y:yMoney},plugins:{tooltip:tipMoney}}});
-  chart('cOvQty',{type:'bar',data:{labels,datasets:[{label:'Work orders',isNum:true,data:ms.map(x=>x.a.n),backgroundColor:T.k[3],borderRadius:4}]},
-    options:{scales:{y:{beginAtZero:true,ticks:{precision:0}}},plugins:{legend:{display:false},tooltip:tipMoney}}});
-  // channel share (ignores channel filter so all categories are visible)
-  const chRows=rowsFor(P,{ch:'all'});const g=groupBy(chRows,r=>r.ch);const tot=agg(chRows).total;
-  const order=[...CHANNELS,...[...g.keys()].filter(k=>!CHANNELS.includes(k))];
-  const list=order.filter(k=>g.has(k)||CHANNELS.includes(k)).map((k,i)=>{const x=g.get(k)||Z();return {ch:k,...x,share:div(x.total,tot),c:T.k[i%7]};}).sort((a,b)=>b.total-a.total);
-  $('#chShare').innerHTML=table([
-    {h:'Category',l:true,f:r=>`<span class="dot" style="background:${r.c}"></span>${esc(r.ch)}`},
-    {h:'WOs',f:r=>num(r.n)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'MRR',f:r=>taka(r.mrr)},{h:'Total WO value',f:r=>taka(r.total)},
-    {h:'Share',f:r=>`<div style="min-width:130px;display:flex;align-items:center;gap:8px;justify-content:flex-end"><div class="bar" style="width:80px;margin:0"><i style="width:${(r.share||0)*100}%;background:${r.c}"></i></div>${pct(r.share==null?null:r.share*100)}</div>`}],list);
-}
-
-/* ========================= PAGE 2: KAM ========================= */
+/* ========================= ACTION ENGINE (used by Overview and Action plan) ========================= */
 function kamRows(P,ch){
   const rows=S.q.filter(r=>r.date>=P.from&&r.date<=P.to&&(ch==='all'||r.ch===ch));
   const g=groupBy(rows,r=>r.kam);
@@ -392,180 +511,11 @@ function kamRows(P,ch){
     const a=g.get(k)||Z();let {t,covered}=periodTarget(P,k,ch);if(t&&!(t.total>0))t=null;
     const act=covered.length?agg(rows.filter(r=>r.kam===k&&covered.includes(r.m))):Z();
     const ach=t&&t.total>0?act.total/t.total*100:null;
-    return {kam:k,...a,target:t?t.total:null,tgt:t,ach,gap:t?t.total-act.total:null,avg:a.n?a.total/a.n:null,st:kamStatus(ach,a.n,P.elapsed)};
+    return {kam:k,...a,target:t?t.total:null,tgt:t,ach,gap:t?t.total-act.total:null,avg:a.n?a.total/a.n:null,st:kamStatus(ach,a.n,P.pace)};
   }).sort((x,y)=>y.total-x.total||x.kam.localeCompare(y.kam));
 }
-function renderKam(){
-  const P=period();const ch=F.ch;const list=kamRows(P,ch);
-  const other=agg(S.q.filter(r=>r.date>=P.from&&r.date<=P.to&&r.kam===UN&&(ch==='all'||r.ch===ch)));
-  const compTot=list.reduce((s,x)=>s+x.total,0)+other.total;
-  list.forEach((x,i)=>{x.rank=i+1;x.share=div(x.total,compTot);});
-  const active=list.filter(x=>x.n>0);const top=active[0];
-  const withT=list.filter(x=>x.target>0);
-  const low=withT.length?[...withT].sort((a,b)=>a.total-b.total)[0]:null;
-  const zero=list.filter(x=>x.n===0);
-  const metTarget=list.filter(x=>x.ach!=null&&x.ach>=100);
-  if(!S.focusKam||!S.roster.includes(S.focusKam))S.focusKam=(top||list[0]).kam;
-  const sum=list.reduce((s,x)=>({n:s.n+x.n,otc:s.otc+x.otc,saas:s.saas+x.saas,mrr:s.mrr+x.mrr,total:s.total+x.total}),Z());
-  const tsum=list.reduce((s,x)=>s+(x.target||0),0);
-  $('#p-kam').innerHTML=`
-  <div class="grid kpis">
-    ${kpi('Top performer by WO value',top?esc(top.kam):'n/a',top?taka(top.total)+', '+num(top.n)+' WOs':'No work orders in period')}
-    ${kpi('Lowest, among KAMs with a target',low?esc(low.kam):'n/a',low?taka(low.total)+' vs target '+taka(low.target):'No KAM targets for this period')}
-    ${kpi('KAMs with zero work orders',num(zero.length),zero.length?esc(zero.slice(0,6).map(x=>x.kam).join(', '))+(zero.length>6?' and more':''):'Every KAM has at least one WO')}
-    ${kpi('KAMs at or above target',num(metTarget.length),metTarget.length?esc(metTarget.map(x=>x.kam).join(', ')):'None yet in this period')}
-  </div>
-  <div class="card"><h3>KAM ranking by total WO value</h3><p class="note">${esc(P.label)}. Ranked highest to lowest by Total WO value only. Click a row to open that KAM below. Red rows have no work orders.${ch!=='all'?' A channel filter is on, so KAM targets are not shown (targets are set per KAM, not per channel).':''}</p>
-  <div id="kamTable"></div></div>
-  <div class="grid two" style="margin-top:14px">
-    <div class="card"><h3>Target vs achievement by KAM</h3><p class="note">Total WO value against the KAM's assigned target, in rank order.</p>${box('cKamT','tall')}</div>
-    <div class="card"><h3>Contribution to company revenue</h3><p class="note">Each KAM's share of Total WO value in the period${other.n?'. Unassigned and unmapped KAMs make up '+pct(div(other.total,compTot)*100):''}.</p>${box('cKamShare','tall')}</div>
-    <div class="card" style="grid-column:1/-1"><h3>Month on month comparison</h3><p class="note">Total WO value per KAM for ${esc(mLabel(addMonth(P.ref,-1)))} and ${esc(mLabel(P.ref))}${P.partial?' (month to date)':''}.</p>${box('cKamMoM','tall')}</div>
-  </div>
-  <div class="sec">KAM cards</div>
-  <div class="grid kcards" id="kcards"></div>
-  <div class="sec" id="kdetailH">Individual KAM view</div>
-  <div id="kdetail"></div>`;
-  const cols=[
-    {h:'Rank',l:true,f:r=>String(r.rank)},{h:'KAM',l:true,f:r=>`<b>${esc(r.kam)}</b>`},{h:'WOs',f:r=>num(r.n)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'MRR',f:r=>taka(r.mrr)},
-    {h:'Total WO value',f:r=>`<b>${taka(r.total)}</b>`},{h:'Assigned target',f:r=>r.target==null?'n/a':taka(r.target)},{h:'Achievement',f:r=>pct(r.ach)},
-    {h:'Remaining gap',f:r=>r.gap==null?'n/a':(r.gap>0?taka(r.gap):'Met')},{h:'Avg WO value',f:r=>r.avg==null?'n/a':taka(r.avg)},{h:'Share',f:r=>pct(r.share==null?null:r.share*100)},
-    {h:'Status',l:true,f:r=>`<span class="pill ${r.st.cls}">${r.st.txt}</span>`}];
-  const trs=list.map(r=>({...r,_cls:'click '+(r.n===0?'zero':''),_attr:`data-kam="${esc(r.kam)}"`}));
-  const tr=trs.concat([{kam:UN,_cls:'',rank:'',n:other.n,otc:other.otc,saas:other.saas,mrr:other.mrr,total:other.total,target:null,ach:null,gap:null,avg:other.n?other.total/other.n:null,share:div(other.total,compTot),st:{cls:'mute',txt:'Not ranked'}},
-    {kam:'Total',_cls:'total',rank:'',n:sum.n+other.n,otc:sum.otc+other.otc,saas:sum.saas+other.saas,mrr:sum.mrr+other.mrr,total:sum.total+other.total,target:tsum||null,ach:null,gap:null,avg:null,share:compTot?1:null,st:{cls:'mute',txt:''}}]);
-  tr[tr.length-1].ach=tsum>0?list.reduce((s,x)=>s+(x.tgt&&x.tgt.total>0?x.total:0),0)/tsum*100:null;
-  tr[tr.length-1].gap=tsum>0?tsum-list.reduce((s,x)=>s+(x.tgt&&x.tgt.total>0?x.total:0),0):null;
-  $('#kamTable').innerHTML=table(cols,tr);
-  $('#kamTable').onclick=e=>{const r=e.target.closest('tr[data-kam]');if(r){S.focusKam=r.dataset.kam;renderKam();document.getElementById('kdetailH').scrollIntoView({behavior:'smooth'});}};
-  const T=theme();
-  const lab=list.map(x=>x.kam);
-  chart('cKamT',{type:'bar',data:{labels:lab,datasets:[{label:'Total WO value',data:list.map(x=>x.total),backgroundColor:T.saas,borderRadius:3},{label:'Target',data:list.map(x=>x.target),backgroundColor:T.target,borderRadius:3}]},
-    options:{indexAxis:'y',scales:{x:yMoney,y:{ticks:{autoSkip:false}}},plugins:{tooltip:tipH}}});
-  const sh=list.filter(x=>x.total>0);const shList=other.total>0?[...sh,{kam:UN,total:other.total}]:sh;
-  chart('cKamShare',{type:'bar',data:{labels:shList.map(x=>x.kam),datasets:[{label:'Share of company WO value',isPct:true,data:shList.map(x=>div(x.total,compTot)*100),backgroundColor:T.otc,borderRadius:3}]},
-    options:{indexAxis:'y',scales:{x:{ticks:{callback:v=>v+'%'}},y:{ticks:{autoSkip:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+pct(c.parsed.x)}}}}});
-  const pm=addMonth(P.ref,-1);
-  const gp=groupBy(S.q.filter(r=>r.m===pm&&(ch==='all'||r.ch===ch)),r=>r.kam),gc=groupBy(S.q.filter(r=>r.m===P.ref&&(ch==='all'||r.ch===ch)),r=>r.kam);
-  chart('cKamMoM',{type:'bar',data:{labels:S.roster,datasets:[{label:mLabel(pm),data:S.roster.map(k=>(gp.get(k)||Z()).total),backgroundColor:T.k[2],borderRadius:3},{label:mlab(P.ref),data:S.roster.map(k=>(gc.get(k)||Z()).total),backgroundColor:T.otc,borderRadius:3}]},
-    options:{scales:{y:yMoney,x:{ticks:{autoSkip:false,maxRotation:60}}},plugins:{tooltip:tipMoney}}});
-  $('#kcards').innerHTML=list.map(x=>{const w=x.ach==null?0:Math.min(100,x.ach);return `<button class="kc ${x.kam===S.focusKam?'sel':''}" data-kam="${esc(x.kam)}" type="button">
-    <div class="nm"><span>#${x.rank} ${esc(x.kam)}</span><span class="pill ${x.st.cls}">${x.st.txt}</span></div>
-    <div class="big">${takaC(x.total)}</div>
-    <div class="bar ${x.st.cls}"><i style="width:${w}%"></i></div>
-    <div class="sm"><span>${x.target!=null?'Target '+takaC(x.target):'No target'}</span><span>${pct(x.ach)}</span></div>
-    <div class="sm"><span>${num(x.n)} WOs</span><span>${x.avg==null?'':'Avg '+takaC(x.avg)}</span></div></button>`;}).join('');
-  $('#kcards').onclick=e=>{const b=e.target.closest('.kc');if(b){S.focusKam=b.dataset.kam;renderKam();}};
-  renderKamDetail(list,P);
-}
-function renderKamDetail(list,P){
-  const k=S.focusKam;const x=list.find(r=>r.kam===k);if(!x){$('#kdetail').innerHTML='';return;}
-  const opts=S.roster.map(n=>`<option ${n===k?'selected':''}>${esc(n)}</option>`).join('');
-  const ms=S.months.map(m=>({m,a:agg(S.q.filter(r=>r.m===m&&r.kam===k&&(F.ch==='all'||r.ch===F.ch))),t:monthTarget(m,k,F.ch)}));
-  const cust=groupBy(S.q.filter(r=>r.date>=P.from&&r.date<=P.to&&r.kam===k&&r.cust),r=>r.cust);
-  const topC=[...cust.entries()].sort((a,b)=>b[1].total-a[1].total).slice(0,8);
-  $('#kdetail').innerHTML=`<div class="card"><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><label class="small">Select KAM <select id="kSel" class="btn" style="margin-left:6px">${opts}</select></label><span class="pill ${x.st.cls}">${x.st.txt}</span><span class="small">${esc(P.label)}</span></div>
-    <div class="grid kpis">${kpi('Total WO value',takaC(x.total),'Rank #'+x.rank+' of '+list.length)}${kpi('Work orders',num(x.n),x.avg==null?'':'Avg '+taka(x.avg))}${kpi('Target achievement',pct(x.ach),x.target==null?'No target loaded':'Target '+taka(x.target))}${kpi('Remaining gap',x.gap==null?'n/a':(x.gap>0?takaC(x.gap):'Target met'),'OTC '+takaC(x.otc)+', SaaS '+takaC(x.saas)+', MRR '+takaC(x.mrr))}</div>
-    <div class="grid two"><div><h3 style="margin:0 0 6px;font-size:14px">Monthly WO value vs target</h3>${box('cKd')}</div>
-    <div><h3 style="margin:0 0 6px;font-size:14px">Largest customers in period</h3>${topC.length?table([{h:'Customer',l:true,f:r=>esc(r.c)},{h:'WOs',f:r=>num(r.n)},{h:'Total WO value',f:r=>taka(r.total)}],topC.map(([c,a])=>({c,...a}))):'<p class="small">No work orders in this period.</p>'}</div></div></div>`;
-  $('#kSel').onchange=e=>{S.focusKam=e.target.value;renderKam();};
-  const T=theme();
-  chart('cKd',{type:'bar',data:{labels:ms.map(y=>mlab(y.m)),datasets:[{label:'Total WO value',data:ms.map(y=>y.a.total),backgroundColor:T.saas,borderRadius:3},{label:'Target',data:ms.map(y=>y.t?y.t.total:null),backgroundColor:T.target,borderRadius:3}]},options:{scales:{y:yMoney},plugins:{tooltip:tipMoney}}});
-}
-
-/* ========================= PAGE 3: PRODUCT ========================= */
-function renderProduct(){
-  const P=period();const rows=rowsFor(P,{ch:'all'});const a=agg(rowsFor(P));
-  const T=theme();
-  const chRows=rowsFor(P);
-  const g=groupBy(rows,r=>r.ch);const tot=agg(rows).total;
-  const order=[...CHANNELS,...[...g.keys()].filter(k=>!CHANNELS.includes(k))];
-  const pm=addMonth(P.ref,-1);
-  const gCur=groupBy(S.q.filter(r=>r.m===P.ref&&(F.kam==='all'||r.kam===F.kam)),r=>r.ch),gPrev=groupBy(S.q.filter(r=>r.m===pm&&(F.kam==='all'||r.kam===F.kam)),r=>r.ch);
-  const list=order.map((k,i)=>{const x=g.get(k)||Z();const c=gCur.get(k)||Z(),p=gPrev.get(k)||Z();const tg=periodTarget(P,'all',k);const act=tg.covered.length?agg(rows.filter(r=>r.ch===k&&tg.covered.includes(r.m))):Z();
-    return {ch:k,...x,share:div(x.total,tot),avg:x.n?x.total/x.n:null,growth:p.total>0?(c.total-p.total)/p.total*100:null,target:tg.t?tg.t.total:null,ach:tg.t&&tg.t.total>0?act.total/tg.t.total*100:null,c:T.k[i%7]};}).filter(x=>x.n>0||CHANNELS.includes(x.ch)).sort((x,y)=>y.total-x.total);
-  const pk=groupBy(chRows.filter(r=>r.saas>0||r.pkg),r=>r.pkg||'(no package)');
-  const isApi=n=>/api|sdk/i.test(n);
-  const pkList=[...pk.entries()].map(([n,x])=>({n,...x})).sort((x,y)=>y.saas-x.saas);
-  const apiSaas=pkList.filter(x=>isApi(x.n)).reduce((s,x)=>s+x.saas,0);
-  const ms=monthSeries();
-  $('#p-product').innerHTML=`
-  <div class="grid kpis">
-    ${kpi('OTC and device revenue',takaC(a.otc),pct(div(a.otc,a.total)==null?null:div(a.otc,a.total)*100)+' of Total WO value')}
-    ${kpi('SaaS revenue',takaC(a.saas),pct(div(a.saas,a.total)==null?null:div(a.saas,a.total)*100)+' of Total WO value')}
-    ${kpi('MRR',takaC(a.mrr),'Recurring, shown separately')}
-    ${kpi('Average revenue per WO',a.n?takaC(a.total/a.n):'n/a',num(a.n)+' work orders')}
-  </div>
-  <div class="banner">API revenue is already part of SaaS and is never added again. The export has no separate API amount, so API appears only as a SaaS package breakdown below${apiSaas>0?' ('+taka(apiSaas)+' of SaaS in API packages for this period)':' (no API package rows in this period)'}. MRR is tracked on its own and is not added to Total WO value, which matches your KAM Report.</div>
-  <div class="grid two">
-    <div class="card"><h3>Monthly revenue by stream</h3><p class="note">OTC, SaaS and MRR per month.</p>${box('cPrTrend')}</div>
-    <div class="card"><h3>Revenue by business category</h3><p class="note">${esc(P.label)}, Total WO value.</p>${box('cPrCh')}</div>
-    <div class="card"><h3>Work orders by category</h3><p class="note">Qualifying WO count and average revenue per WO.</p>${box('cPrQty')}</div>
-    <div class="card"><h3>SaaS by package</h3><p class="note">Breakdown within SaaS. API packages are included in the SaaS total.</p>${box('cPrPkg')}</div>
-  </div>
-  <div class="card" style="margin-top:14px"><h3>Category performance, growth and target</h3><p class="note">Growth compares ${esc(mLabel(P.ref))}${P.partial?' (month to date)':''} with ${esc(mLabel(pm))}. Category targets appear only when you load them (channel level targets were used before October 2026).</p><div id="chTable"></div></div>`;
-  $('#chTable').innerHTML=table([
-    {h:'Category',l:true,f:r=>`<span class="dot" style="background:${r.c}"></span>${esc(r.ch)}`},{h:'WOs',f:r=>num(r.n)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'MRR',f:r=>taka(r.mrr)},{h:'Total WO value',f:r=>taka(r.total)},{h:'Share',f:r=>pct(r.share==null?null:r.share*100)},
-    {h:'Avg per WO',f:r=>r.avg==null?'n/a':taka(r.avg)},{h:'Growth vs prev. month',f:r=>`<span class="${r.growth==null?'':r.growth>=0?'up':'down'}">${spct(r.growth)}</span>`},{h:'Target',f:r=>r.target==null?'n/a':taka(r.target)},{h:'Achievement',f:r=>pct(r.ach)}],list);
-  const labels=ms.map(x=>mlab(x.m));
-  chart('cPrTrend',{type:'line',data:{labels,datasets:[{label:'OTC',data:ms.map(x=>x.a.otc),borderColor:T.otc,pointRadius:4,borderWidth:2.5,tension:0},{label:'SaaS',data:ms.map(x=>x.a.saas),borderColor:T.saas,pointRadius:4,borderWidth:2.5,tension:0},{label:'MRR',data:ms.map(x=>x.a.mrr),borderColor:T.mrr,pointRadius:4,borderWidth:2.5,tension:0}]},options:{scales:{y:Object.assign({beginAtZero:true},yMoney)},plugins:{tooltip:tipMoney}}});
-  const L=list.filter(x=>x.n>0);
-  chart('cPrCh',{type:'bar',data:{labels:L.map(x=>x.ch),datasets:[{label:'OTC',data:L.map(x=>x.otc),backgroundColor:T.otc},{label:'SaaS',data:L.map(x=>x.saas),backgroundColor:T.saas}]},options:{indexAxis:'y',scales:{x:Object.assign({stacked:true},yMoney),y:{stacked:true}},plugins:{tooltip:tipH}}});
-  chart('cPrQty',{type:'bar',data:{labels:L.map(x=>x.ch),datasets:[{label:'Work orders',isNum:true,data:L.map(x=>x.n),backgroundColor:T.k[3],borderRadius:3}]},options:{scales:{y:{beginAtZero:true,ticks:{precision:0}}},plugins:{legend:{display:false},tooltip:tipMoney}}});
-  const P2=pkList.filter(x=>x.saas>0).slice(0,10);
-  chart('cPrPkg',{type:'bar',data:{labels:P2.map(x=>x.n+(isApi(x.n)?' (API)':'')),datasets:[{label:'SaaS amount',data:P2.map(x=>x.saas),backgroundColor:P2.map(x=>isApi(x.n)?T.k[4]:T.saas),borderRadius:3}]},options:{indexAxis:'y',scales:{x:yMoney,y:{ticks:{autoSkip:false}}},plugins:{legend:{display:false},tooltip:tipH}}});
-}
-
-/* ========================= PAGE 4: GROWTH ========================= */
-function renderGrowth(){
-  const P=period();const T=theme();
-  const ms=monthSeries();const labels=ms.map(x=>mlab(x.m));
-  const comp=ms.map(x=>!isPartialMonth(x.m));
-  const gr=(k)=>ms.map((x,i)=>{if(i===0||!comp[i])return null;const p=ms[i-1].a[k];return p>0?(x.a[k]-p)/p*100:null;});
-  const achM=ms.map(x=>{if(!x.t||!(x.t.total>0))return null;return x.a.total/x.t.total*100;});
-  const avgM=ms.map(x=>x.a.n?x.a.total/x.a.n:null);
-  const nr=ms.map(x=>{const rs=rowsMonth(x.m);const ms0=x.m+'-01';let nw=Z(),rp=Z();for(const r of rs){const fs=r.cust&&S.firstSeen.get(r.cust.toLowerCase());(fs&&fs<ms0?rp:nw).n++;((fs&&fs<ms0)?rp:nw).total+=r.total;}return {nw,rp};});
-  const kamMonth=S.months.map(m=>groupBy(S.q.filter(r=>r.m===m&&(F.ch==='all'||r.ch===F.ch)),r=>r.kam));
-  const totK=groupBy(S.q.filter(r=>r.date>=P.from&&r.date<=P.to&&(F.ch==='all'||r.ch===F.ch)),r=>r.kam);
-  const rank=[...totK.entries()].sort((a,b)=>b[1].total-a[1].total);
-  const grand=rank.reduce((s,x)=>s+x[1].total,0);
-  const cum=n=>div(rank.slice(0,n).reduce((s,x)=>s+x[1].total,0),grand);
-  const top3=rank.slice(0,3).map(x=>x[0]);
-  $('#p-growth').innerHTML=`
-  <div class="grid kpis">
-    ${kpi('Top 3 KAM share',pct(cum(3)==null?null:cum(3)*100),top3.length?esc(top3.join(', ')):'No work orders')}
-    ${kpi('Top 1 KAM share',pct(cum(1)==null?null:cum(1)*100),rank[0]?esc(rank[0][0]):'')}
-    ${kpi('Top 5 KAM share',pct(cum(5)==null?null:cum(5)*100),esc(P.label))}
-  </div>
-  <div class="banner">Growth rates use completed months only. The current month is month to date and is left out of every growth line so it does not look like a collapse.</div>
-  <div class="grid two">
-    <div class="card"><h3>Month on month revenue growth</h3><p class="note">Change in Total WO value versus the previous month.</p>${box('cGrMoM')}</div>
-    <div class="card"><h3>Target achievement by month</h3><p class="note">Months with a loaded target only. Dashed line is 100%.</p>${box('cGrAch')}</div>
-    <div class="card"><h3>OTC vs SaaS growth</h3><p class="note">Month on month change in each stream.</p>${box('cGrStream')}</div>
-    <div class="card"><h3>MRR growth</h3><p class="note">Monthly MRR with month on month change.</p>${box('cGrMrr')}</div>
-    <div class="card"><h3>Average WO value trend</h3><p class="note">Total WO value divided by work orders, per month.</p>${box('cGrAvg')}</div>
-    <div class="card"><h3>New vs repeat customers</h3><p class="note">Repeat means the customer had an earlier order in this export (history starts Sep 2025, so early months can over count new customers).</p>${box('cGrNew')}</div>
-    <div class="card"><h3>Revenue contribution by KAM</h3><p class="note">Share of monthly Total WO value. Top 5 KAMs of the period, others grouped.</p>${box('cGrKam')}</div>
-    <div class="card"><h3>Revenue concentration</h3><p class="note">Cumulative share of Total WO value held by the top KAMs (${esc(P.label)}).</p>${box('cGrConc')}</div>
-  </div>
-  <div class="card" style="margin-top:14px"><h3>Monthly summary</h3><div id="grTable"></div></div>`;
-  chart('cGrMoM',{type:'bar',data:{labels,datasets:[{label:'Total WO value growth',isPct:true,data:gr('total'),backgroundColor:gr('total').map(v=>v==null||v>=0?T.good:T.bad),borderRadius:3}]},options:{scales:{y:{ticks:{callback:v=>v+'%'}}},plugins:{legend:{display:false},tooltip:tipMoney}}});
-  chart('cGrAch',{type:'line',data:{labels,datasets:[{label:'Achievement',isPct:true,data:achM,borderColor:T.saas,pointRadius:5,borderWidth:2.5,tension:0,spanGaps:false},{label:'100% line',isPct:true,data:labels.map(()=>100),borderColor:T.target,borderDash:[6,5],pointRadius:0,borderWidth:1.5}]},options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'%'}}},plugins:{tooltip:tipMoney}}});
-  chart('cGrStream',{type:'line',data:{labels,datasets:[{label:'OTC growth',isPct:true,data:gr('otc'),borderColor:T.otc,pointRadius:4,borderWidth:2.5,tension:0},{label:'SaaS growth',isPct:true,data:gr('saas'),borderColor:T.saas,pointRadius:4,borderWidth:2.5,tension:0}]},options:{scales:{y:{ticks:{callback:v=>v+'%'}}},plugins:{tooltip:tipMoney}}});
-  chart('cGrMrr',{type:'bar',data:{labels,datasets:[{type:'bar',label:'MRR',data:ms.map(x=>x.a.mrr),backgroundColor:T.mrr,borderRadius:3,yAxisID:'y'},{type:'line',label:'MRR growth',isPct:true,data:gr('mrr'),borderColor:T.otc,pointRadius:4,borderWidth:2,tension:0,yAxisID:'y1'}]},options:{scales:{y:Object.assign({position:'left'},yMoney),y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}},plugins:{tooltip:tipMoney}}});
-  chart('cGrAvg',{type:'line',data:{labels,datasets:[{label:'Average WO value',data:avgM,borderColor:T.k[4],pointRadius:4,borderWidth:2.5,tension:0}]},options:{scales:{y:Object.assign({beginAtZero:true},yMoney)},plugins:{legend:{display:false},tooltip:tipMoney}}});
-  chart('cGrNew',{type:'bar',data:{labels,datasets:[{label:'New customers',data:nr.map(x=>x.nw.total),backgroundColor:T.saas},{label:'Repeat customers',data:nr.map(x=>x.rp.total),backgroundColor:T.otc}]},options:{scales:{x:{stacked:true},y:Object.assign({stacked:true},yMoney)},plugins:{tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+taka(c.parsed.y)+' ('+num((c.datasetIndex===0?nr[c.dataIndex].nw:nr[c.dataIndex].rp).n)+' WOs)'}}}}});
-  const topN=rank.slice(0,5).map(x=>x[0]);const series=[...topN,'All others'];
-  chart('cGrKam',{type:'bar',data:{labels,datasets:series.map((k,i)=>({label:k,isPct:true,data:S.months.map((m,mi)=>{const gm=kamMonth[mi];const tm=[...gm.values()].reduce((s,x)=>s+x.total,0);if(!tm)return null;const v=k==='All others'?[...gm.entries()].filter(([n])=>!topN.includes(n)).reduce((s,[,x])=>s+x.total,0):(gm.get(k)||Z()).total;return v/tm*100;}),backgroundColor:k==='All others'?T.k[5]:T.k[i%5],borderWidth:0}))},options:{scales:{x:{stacked:true},y:{stacked:true,max:100,ticks:{callback:v=>v+'%'}}},plugins:{tooltip:tipMoney}}});
-  const cs=[];let run=0;rank.slice(0,Math.min(10,rank.length)).forEach((x,i)=>{run+=x[1].total;cs.push({n:i+1,v:grand?run/grand*100:0});});
-  chart('cGrConc',{type:'line',data:{labels:cs.map(x=>'Top '+x.n),datasets:[{label:'Cumulative share',isPct:true,data:cs.map(x=>x.v),borderColor:T.otc,backgroundColor:T.otc+'22',fill:true,pointRadius:4,tension:0}]},options:{scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}},plugins:{legend:{display:false},tooltip:tipMoney}}});
-  const rows=ms.map((x,i)=>({m:mLabel(x.m)+(isPartialMonth(x.m)?' (MTD)':''),...x.a,avg:avgM[i],g:gr('total')[i],ach:achM[i],tg:x.t?x.t.total:null}));
-  $('#grTable').innerHTML=table([{h:'Month',l:true,f:r=>esc(r.m)},{h:'WOs',f:r=>num(r.n)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'MRR',f:r=>taka(r.mrr)},{h:'Total WO value',f:r=>taka(r.total)},{h:'Avg WO',f:r=>r.avg==null?'n/a':taka(r.avg)},{h:'MoM growth',f:r=>`<span class="${r.g==null?'':r.g>=0?'up':'down'}">${spct(r.g)}</span>`},{h:'Target',f:r=>r.tg==null?'n/a':taka(r.tg)},{h:'Achievement',f:r=>pct(r.ach)}],rows);
-}
-
-/* ========================= PAGE 5: ACTIONS ========================= */
-function renderActions(){
-  const P=period();const ch=F.ch;const list=kamRows(P,ch);const pm=addMonth(P.ref,-1);
+function computeActions(P,ch){
+  const list=kamRows(P,ch);const pm=addMonth(P.ref,-1);
   list.forEach((x,i)=>x.rank=i+1);
   const gPrev=groupBy(S.q.filter(r=>r.m===pm&&(ch==='all'||r.ch===ch)),r=>r.kam),gCur=groupBy(S.q.filter(r=>r.m===P.ref&&(ch==='all'||r.ch===ch)),r=>r.kam);
   const tot=agg(rowsFor(P,{kam:'all'}));const tt=periodTarget(P,'all',ch);
@@ -595,44 +545,385 @@ function renderActions(){
     push('bad',`${words[zero.length]||zero.length} KAM${zero.length>1?'s have':' has'} not generated any work orders: ${zero.map(x=>x.kam).join(', ')}.`,zeroT.length?`${zeroT.map(x=>x.kam).join(', ')} ${zeroT.length>1?'carry':'carries'} a combined target of ${taka(zeroT.reduce((s,x)=>s+x.target,0))} with no work orders. Start with a pipeline review for each, and check whether their deals are stuck before SA Done.`:'None of these KAMs carry a target. Confirm whether they are expected to sell this period.');
   }
   // below target
-  const below=list.filter(x=>x.ach!=null&&x.ach<100&&x.n>0&&(!P.partial||x.ach<P.elapsed*100)).sort((a,b)=>a.ach-b.ach);
+  const below=list.filter(x=>x.ach!=null&&x.ach<100&&x.n>0&&(!P.partial||x.ach<P.pace*100)).sort((a,b)=>a.ach-b.ach);
   below.forEach(x=>{
     const need=x.gap;const woNeed=x.avg?Math.ceil(need/x.avg):null;
-    const bad=x.ach<60*P.elapsed;
-    push(bad?'bad':'warn',`${x.kam} has achieved only ${pct(x.ach)} of the ${P.months.length>1?'period':'monthly'} target${P.partial?' while '+pct(P.elapsed*100)+' of the month has passed':''} (${taka(x.total)} of ${taka(x.target)}).`,`Gap ${taka(need)}${woNeed?`, about ${num(woNeed)} more work orders at ${x.kam}'s average of ${taka(x.avg)}`:''}. ${x.otc>x.saas*3?'Revenue is mostly OTC, so push SaaS attachment on open device deals.':'Revenue is SaaS led, so look for large device or onboarding deals to close the OTC part.'}`);
+    const bad=x.ach<60*P.pace;
+    push(bad?'bad':'warn',`${x.kam} has achieved only ${pct(x.ach)} of the ${P.months.length>1?'period':'monthly'} target${P.partial?' while '+pct(P.pace*100)+' of the month has passed':''} (${taka(x.total)} of ${taka(x.target)}).`,`Gap ${taka(need)}${woNeed?`, about ${num(woNeed)} more work orders at ${x.kam}'s average of ${taka(x.avg)}`:''}. ${x.otc>x.saas*3?'Revenue is mostly OTC, so push SaaS attachment on open device deals.':'Revenue is SaaS led, so look for large device or onboarding deals to close the OTC part.'}`);
   });
   // high WO low ach
-  active.filter(x=>x.total>=median&&x.ach!=null&&x.ach<60*P.elapsed).forEach(x=>push('warn',`${x.kam} has high WO value (${taka(x.total)}, above the ${taka(median)} median) but only ${pct(x.ach)} of target.`,'Volume is fine, so the target is likely set too high for this KAM or deal size must grow. Review the target with the KAM and management.'));
+  active.filter(x=>x.total>=median&&x.ach!=null&&x.ach<60*P.pace).forEach(x=>push('warn',`${x.kam} has high WO value (${taka(x.total)}, above the ${taka(median)} median) but only ${pct(x.ach)} of target.`,'Volume is fine, so the target is likely set too high for this KAM or deal size must grow. Review the target with the KAM and management.'));
   // high ach low revenue
   active.filter(x=>x.ach!=null&&x.ach>=100&&x.total<median).forEach(x=>push('info',`${x.kam} reached ${pct(x.ach)} of target but holds a below median WO value (${taka(x.total)}).`,'A small target is being met easily. Raise the next target and give this KAM larger accounts.'));
   // declining
   active.concat(list.filter(x=>x.n===0)).forEach(x=>{const p=(gPrev.get(x.kam)||Z()).total,c=(gCur.get(x.kam)||Z()).total;if(!P.partial&&p>0&&c<p*0.8)push('warn',`${x.kam} declined ${((p-c)/p*100).toFixed(2)}% month on month (${taka(p)} to ${taka(c)}).`,'Review what changed: lost deals, fewer leads reaching SA Done, or a seasonal gap.');});
-  if(P.partial){active.forEach(x=>{const pmD=agg(S.q.filter(r=>r.m===pm&&r.kam===x.kam&&+r.date.slice(8,10)<=P.dayN));});}
   // weak categories
   const g1=groupBy(S.q.filter(r=>r.m===P.ref&&(F.kam==='all'||r.kam===F.kam)),r=>r.ch),g0=groupBy(S.q.filter(r=>r.m===pm&&(F.kam==='all'||r.kam===F.kam)&&(!P.partial||+r.date.slice(8,10)<=P.dayN)),r=>r.ch);
   CHANNELS.forEach(k=>{const c=g1.get(k)||Z(),p=g0.get(k)||Z();if(p.total>0&&c.total<p.total*0.7)push('warn',`${k} is weak: ${taka(c.total)} ${P.partial?'month to date':'this month'} against ${taka(p.total)} ${P.partial?'for the same days':''} last month (${spct((c.total-p.total)/p.total*100)}).`,`Ask the KAMs who sell into ${k} for their open deals and reasons for delay.`);if(p.total===0&&c.total===0&&!(g1.get(k))&&!(g0.get(k)))push('info',`${k} has no work orders in either month.`,'Confirm whether this category is active, or whether deals are tagged to another channel.');});
   const unA=(g1.get('Unassigned')||Z());if(unA.n)push('info',`${num(unA.n)} work orders in ${mLabel(P.ref)} have no sales channel.`,'Fix the channel on these Odoo orders so category targets can be tracked.');
   const sev={bad:0,warn:1,info:2,ok:3};I.sort((a,b)=>sev[a.sev]-sev[b.sev]);
-  const icon={bad:'<span class="pill bad">Act now</span>',warn:'<span class="pill warn">Watch</span>',info:'<span class="pill info">Note</span>',ok:'<span class="pill good">Good</span>'};
-  $('#p-actions').innerHTML=`
-  <div class="banner">Insights are generated from the data for ${esc(P.label)}${ch!=='all'?', category '+esc(ch):''}. Change the month or category above to refresh them.</div>
-  <div class="grid kpis">
-    ${kpi('KAMs below target',num(below.length),below.length?esc(below.slice(0,4).map(x=>x.kam).join(', ')):'None')}
-    ${kpi('KAMs with zero WOs',num(zero.length),zero.length?esc(zero.slice(0,4).map(x=>x.kam).join(', '))+(zero.length>4?' and more':''):'None')}
-    ${kpi('Revenue gap to target',gap==null?'n/a':(gap>0?takaC(gap):'Target met'),gap==null?'No target loaded':'Company level')}
-    ${kpi('Insights raised',num(I.length),I.filter(x=>x.sev==='bad').length+' need action now')}
-  </div>
-  <div class="card"><h3>Automated insights and recommended actions</h3><p class="note">Most urgent first.</p>
-  <ul class="ins">${I.map(x=>`<li><div>${icon[x.sev]}</div><div><div class="t">${esc(x.text)}</div><div class="a">${esc(x.action)}</div></div></li>`).join('')}</ul></div>
-  <div class="grid two" style="margin-top:14px">
-    <div class="card"><h3>Revenue gap by KAM</h3><p class="note">Remaining distance to target, largest first.</p>${box('cAcGap')}</div>
-    <div class="card"><h3>WO value vs target pace</h3><p class="note">Total WO value as a share of target. ${P.partial?'Dashed line is how far through the month we are.':''}</p>${box('cAcAch')}</div>
+  return {I,list,below,zero,gap,tt,pm};
+}
+const SEV_PILL={bad:'<span class="pill bad">Act now</span>',warn:'<span class="pill warn">Watch</span>',info:'<span class="pill info">Note</span>',ok:'<span class="pill good">Good</span>'};
+
+/* ========================= PAGE 1: OVERVIEW ========================= */
+function renderOverview(){
+  const P=period();const rows=rowsFor(P);const a=agg(rows);const T=theme();
+  const {t,covered}=periodTarget(P,F.kam,F.ch);
+  const actCov=covered.length?agg(rows.filter(r=>covered.includes(r.m))):null;
+  const showT=!!(t&&t.total>0);
+  const ach=showT?actCov.total/t.total*100:null;
+  const gap=t?t.total-(actCov?actCov.total:0):null;
+  const pm=addMonth(P.ref,-1);
+  const cur=agg(rowsMonth(P.ref)),prev=agg(rowsMonth(pm));
+  const mom=prev.total>0?(cur.total-prev.total)/prev.total*100:null;
+  let lfl=null;
+  if(P.partial){const d=P.dayN;const p2=agg(S.q.filter(r=>r.m===pm&&+r.date.slice(8,10)<=d&&(F.kam==='all'||r.kam===F.kam)&&(F.ch==='all'||r.ch===F.ch)));lfl={prev:p2,g:p2.total>0?(cur.total-p2.total)/p2.total*100:null,d};}
+  const st=kamStatus(ach,a.n,P.pace);
+  const rem=P.dim-P.dayN;
+  const scope=[F.kam!=='all'?F.kam:'',F.ch!=='all'?F.ch:'',P.label].filter(Boolean).join(' · ');
+  const tgtNote=showT?(covered.length<P.months.length?'Target covers '+covered.map(mLabel).join(', ')+' only.':(F.kam!=='all'?'Target set for this KAM.':F.ch!=='all'?'Target set for this category.':'Target is the sum of all KAM targets.')):'';
+  let foot1='',foot2='';
+  if(showT){
+    if(gap>0){foot1=`${takaC(gap)} still to win`;if(P.partial&&P.months.length===1&&rem>0)foot2=`${plural(rem,'day')} left, about ${takaC(gap/rem)} needed per day`;}
+    else foot1=`Target met, ${takaC(-gap)} above it`;
+  }
+  const tick=(showT&&P.partial)?`<b style="left:${Math.min(100,P.pace*100)}%"></b>`:'';
+  const band=`<section class="band" data-st="${st.cls}" aria-label="Headline result">
+    <div><div class="band-label">Revenue won · ${esc(scope)}</div><div class="band-num">${takaC(a.total)}</div><div class="band-full">${taka(a.total)} from ${plural(a.n,'work order')}</div></div>
+    <div>${showT?`<div class="band-head"><span class="pill ${st.cls}">${esc(st.txt)}</span><span>${pctS(ach)} of the ${takaC(t.total)} target</span></div>
+      <div class="track" role="img" aria-label="${pctS(ach)} of target reached${P.partial?', '+pctS(P.pace*100)+' of the period has passed':''}"><i style="width:${Math.min(100,ach)}%"></i>${tick}</div>
+      <div class="band-foot"><span>${foot1}</span><span>${foot2}</span></div>
+      <div class="band-key">${P.partial?`The white tick is how far through the period we are (${pctS(P.pace*100)}). A bar past the tick means ahead of pace. `:''}${esc(tgtNote)}</div>`
+      :`<div class="band-head"><span class="pill mute">No target</span></div><div class="band-foot"><span>No target is loaded for this period.</span></div><div class="band-key">Achievement and gap need a target. Pick a month with a target, or load targets on the Data page.</div>`}</div>
+  </section>`;
+  const stats=`<div class="stats">
+    ${stat('Work orders',num(a.n),a.n?'Average '+takaC(a.total/a.n)+' each':'None in this period')}
+    ${stat('One-time revenue (OTC)',takaC(a.otc),pctS(share(a.otc,a.total))+' of revenue. Devices and one-time.',T.otc)}
+    ${stat('SaaS plans',takaC(a.saas),pctS(share(a.saas,a.total))+' of revenue. API included.',T.saas)}
+    ${stat('MRR',takaC(a.mrr),'Recurring monthly. Not added to revenue.',T.mrr)}
+    ${lfl?stat('Vs same days last month',spct0(lfl.g),`${takaC(cur.total)} now vs ${takaC(lfl.prev.total)} (days 1 to ${lfl.d} of ${mLabel(pm)})`)
+        :stat('Vs last month',spct0(mom),mom==null?(prev.total===0?'No previous month value':''):`${mLabel(P.ref)} vs ${mLabel(pm)}`)}
   </div>`;
+  // what needs attention (company-wide, so only when no KAM is selected)
+  let attn='';
+  if(F.kam==='all'){
+    const A=computeActions(P,F.ch);const hot=A.I.filter(x=>x.sev==='bad'||x.sev==='warn').slice(0,3);
+    attn=`<section class="card attn" style="margin-bottom:14px"><div class="eyebrow">What needs attention</div>
+      ${hot.length?`<ul>${hot.map(x=>`<li>${SEV_PILL[x.sev]}<span>${esc(x.text)}</span></li>`).join('')}</ul>`:'<p class="note" style="margin:8px 0">Nothing urgent for this period.</p>'}
+      <button class="link" type="button" data-go="actions">See all ${A.I.length} insights and next steps</button></section>`;
+  }
+  // category ranking
+  const chRows=rowsFor(P,{ch:'all'});const g=groupBy(chRows,r=>r.ch);const tot=agg(chRows).total;
+  const order=[...CHANNELS,...[...g.keys()].filter(k=>!CHANNELS.includes(k))];
+  const list=order.filter(k=>g.has(k)||CHANNELS.includes(k)).map(k=>{const x=g.get(k)||Z();return {ch:k,...x,share:div(x.total,tot)};}).sort((x,y)=>y.total-x.total);
+  const maxV=Math.max(1,...list.map(x=>x.total));
+  const topCat=list[0]&&list[0].total>0?list[0]:null;
+  const rb=list.map(r=>`<div class="rb-row"><span class="rb-name">${esc(r.ch)}</span><div class="rb-bar" role="img" aria-label="${esc(r.ch)} ${pctS(r.share==null?null:r.share*100)} of revenue"><i style="width:${r.total/maxV*100}%"></i></div><span class="rb-val"><b>${takaC(r.total)}</b><small>${pctS(r.share==null?null:r.share*100)}</small></span></div>`).join('');
+  const chTable=table([{h:'Category',l:true,f:r=>esc(r.ch)},{h:'WOs',f:r=>num(r.n)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'MRR',f:r=>taka(r.mrr)},{h:'Total WO value',f:r=>taka(r.total)},{h:'Share',f:r=>pct(r.share==null?null:r.share*100)}],list);
+  // chart takeaways
+  const ms=monthSeries();const labels=ms.map(x=>mlabA(x.m));
+  const lastT=[...ms].reverse().find(x=>x.t&&x.t.total>0);
+  const take1=lastT?`${mLabel(lastT.m)}${isPartialMonth(lastT.m)?' so far':''}: ${pctS(lastT.a.total/lastT.t.total*100)} of the ${takaC(lastT.t.total)} target`:'No monthly target is loaded yet';
+  const take2=cur.total>0?`SaaS plans are ${pct0(share(cur.saas,cur.total))} of ${mLabel(P.ref)} revenue, one-time OTC is the rest`:`No revenue in ${mLabel(P.ref)} yet`;
+  const take3=lfl?`${plural(cur.n,'work order')} so far, against ${lfl.prev.n} in the same days of ${mLabel(pm)}`:`${plural(cur.n,'work order')} in ${mLabel(P.ref)}, ${prev.n} in ${mLabel(pm)}`;
+  $('#p-overview').innerHTML=`
+  ${lead('How are we doing?','The headline result for the period you picked, then what is behind it.')}
+  ${band}${stats}${attn}
+  <div class="grid two">
+    ${chartCard('cOvT','Revenue vs target, by month',esc(take1),'Blue bar is revenue won. The dark tick is that month’s target. Months without a tick have no target loaded.','Bar chart of revenue won per month with a target tick for each month')}
+    ${chartCard('cOvMix','Where the revenue comes from',esc(take2),'Revenue won per month, split into one-time OTC and SaaS plans. MRR is tracked separately in the figures above.','Stacked bars of OTC and SaaS revenue per month')}
+    ${chartCard('cOvQty','Work orders per month',esc(take3),'Qualifying work orders. The latest month may still be in progress.','Bar chart of work orders per month')}
+    <div class="card"><div class="eyebrow">Revenue by business category</div><h3 class="take">${topCat?`${esc(topCat.ch)} brings ${pct0(topCat.share*100)} of revenue`:'No revenue in this period'}</h3><p class="note">${esc(P.label)}. Sales channel is used as the category because the export has no product category column.</p><div class="rb">${rb}</div>${more('See the numbers',chTable)}</div>
+  </div>`;
+  chart('cOvT',{type:'bar',data:{labels,datasets:[
+    {label:'Revenue won',data:ms.map(x=>x.a.total),backgroundColor:T.total,borderRadius:4,maxBarThickness:60,order:1},
+    {...tickMark(T.tick,ms.length),label:'Target',data:ms.map(x=>x.t&&x.t.total>0?x.t.total:null)}]},
+    options:{scales:{y:yMoneyAx(),x:xCatAx()},plugins:{valueLabels:{fmt:takaC,only:[0],skipZero:true},tooltip:tipMoney}}});
+  chart('cOvMix',{type:'bar',data:{labels,datasets:[
+    {label:'One-time (OTC)',data:ms.map(x=>x.a.otc),backgroundColor:T.otc,borderColor:T.panel,borderWidth:2,borderRadius:3,maxBarThickness:60,stack:'s'},
+    {label:'SaaS plans',data:ms.map(x=>x.a.saas),backgroundColor:T.saas,borderColor:T.panel,borderWidth:2,borderRadius:3,maxBarThickness:60,stack:'s'}]},
+    options:{scales:{y:Object.assign(yMoneyAx(),{stacked:true}),x:xCatAx({stacked:true})},plugins:{valueLabels:{fmt:takaC,stack:true},tooltip:tipMoney}}});
+  chart('cOvQty',{type:'bar',data:{labels,datasets:[{label:'Work orders',isNum:true,data:ms.map(x=>x.a.n),backgroundColor:T.slate,borderRadius:4,maxBarThickness:60}]},
+    options:{scales:{y:yCountAx(),x:xCatAx()},plugins:{valueLabels:{fmt:num,skipZero:false},tooltip:tipMoney}}});
+}
+
+/* ========================= PAGE 2: KAM ========================= */
+function lbRow(x,P){
+  const hasT=x.target>0;const pace=P.partial?P.pace*100:null;
+  const meter=hasT?`<div class="meter ${x.st.cls}" role="img" aria-label="${esc(x.kam)} has reached ${pctS(x.ach)} of target"><i style="width:${Math.min(100,x.ach||0)}%"></i>${pace!=null?`<b style="left:${Math.min(100,pace)}%"></b>`:''}</div>`:`<div class="meter none">No target set</div>`;
+  return `<button type="button" class="lb ${x.kam===S.focusKam?'sel':''} ${x.n===0?'zero':''}" data-kam="${esc(x.kam)}" aria-label="Open ${esc(x.kam)} below">
+    <span class="rk">${x.rank}</span>
+    <span class="nm"><b>${esc(x.kam)}</b><small>${plural(x.n,'work order')}${x.avg!=null?', avg '+takaC(x.avg):''}</small></span>
+    ${meter}
+    <span class="amt"><b>${takaC(x.total)}</b><small>${hasT?'of '+takaC(x.target):'no target'}</small></span>
+    <span class="pc">${hasT?pctS(x.ach):'n/a'}</span>
+    <span class="pl">${pill(x.st)}</span></button>`;
+}
+function renderKam(){
+  const P=period();const ch=F.ch;const list=kamRows(P,ch);const T=theme();
+  const other=agg(S.q.filter(r=>r.date>=P.from&&r.date<=P.to&&r.kam===UN&&(ch==='all'||r.ch===ch)));
+  const compTot=list.reduce((s,x)=>s+x.total,0)+other.total;
+  list.forEach((x,i)=>{x.rank=i+1;x.share=div(x.total,compTot);});
+  const active=list.filter(x=>x.n>0);const top=active[0];
+  const withT=list.filter(x=>x.target>0);
+  const zero=list.filter(x=>x.n===0);
+  const metTarget=list.filter(x=>x.ach!=null&&x.ach>=100);
+  const behind=list.filter(x=>x.n>0&&x.ach!=null&&x.st.cls==='bad');
+  if(!S.focusKam||!S.roster.includes(S.focusKam))S.focusKam=(top||list[0]).kam;
+  const sum=list.reduce((s,x)=>({n:s.n+x.n,otc:s.otc+x.otc,saas:s.saas+x.saas,mrr:s.mrr+x.mrr,total:s.total+x.total}),Z());
+  const tsum=list.reduce((s,x)=>s+(x.target||0),0);
+  const names=(arr,k)=>arr.length?esc(arr.slice(0,k).map(x=>x.kam).join(', '))+(arr.length>k?' and more':''):'';
+  const leadP=top?`${esc(top.kam)} leads with ${takaC(top.total)}. ${withT.length?`${metTarget.length} of ${withT.length} KAMs with a target have reached it, ${behind.length} ${behind.length===1?'is':'are'} behind pace`:'No KAM targets are loaded for this period'}${zero.length?`, and ${zero.length} ${zero.length===1?'has':'have'} no work orders yet`:''}.`:'No work orders in this period.';
+  const tiles=`<div class="stats">
+    ${stat('Top performer',top?esc(top.kam):'n/a',top?takaC(top.total)+' from '+plural(top.n,'work order'):'No work orders in period')}
+    ${stat('At or above target',num(metTarget.length),metTarget.length?names(metTarget,5):'None yet in this period')}
+    ${stat('Behind pace',num(behind.length),behind.length?names(behind,5):'None')}
+    ${stat('No work orders',num(zero.length),zero.length?names(zero,6):'Every KAM has at least one')}
+  </div>`;
+  const rowsHtml=list.map(x=>lbRow(x,P)).join('')
+    +(other.n?`<div class="lb static"><span class="rk"></span><span class="nm"><b>${UN}</b><small>${plural(other.n,'work order')}, not ranked</small></span><span></span><span class="amt"><b>${takaC(other.total)}</b><small>${pctS(share(other.total,compTot))} of company</small></span><span class="pc"></span><span class="pl"><span class="pill mute">Not ranked</span></span></div>`:'')
+    +`<div class="lb static total"><span class="rk"></span><span class="nm"><b>All KAMs</b><small>${plural(sum.n+other.n,'work order')}</small></span><span></span><span class="amt"><b>${takaC(sum.total+other.total)}</b><small>${tsum>0?'of '+takaC(tsum)+' in KAM targets':'no targets'}</small></span><span class="pc"></span><span class="pl"></span></div>`;
+  const cols=[
+    {h:'Rank',l:true,f:r=>String(r.rank)},{h:'KAM',l:true,f:r=>`<b>${esc(r.kam)}</b>`},{h:'WOs',f:r=>num(r.n)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'MRR',f:r=>taka(r.mrr)},
+    {h:'Total WO value',f:r=>`<b>${taka(r.total)}</b>`},{h:'Assigned target',f:r=>r.target==null?'n/a':taka(r.target)},{h:'Achievement',f:r=>pct(r.ach)},
+    {h:'Remaining gap',f:r=>r.gap==null?'n/a':(r.gap>0?taka(r.gap):'Met')},{h:'Avg WO value',f:r=>r.avg==null?'n/a':taka(r.avg)},{h:'Share',f:r=>pct(r.share==null?null:r.share*100)},
+    {h:'Status',l:true,f:r=>pill(r.st)}];
+  const trs=list.map(r=>({...r,_cls:'click '+(r.n===0?'zero':''),_attr:`data-kam="${esc(r.kam)}"`}));
+  const tr=trs.concat([{kam:UN,_cls:'',rank:'',n:other.n,otc:other.otc,saas:other.saas,mrr:other.mrr,total:other.total,target:null,ach:null,gap:null,avg:other.n?other.total/other.n:null,share:div(other.total,compTot),st:{cls:'mute',txt:'Not ranked'}},
+    {kam:'Total',_cls:'total',rank:'',n:sum.n+other.n,otc:sum.otc+other.otc,saas:sum.saas+other.saas,mrr:sum.mrr+other.mrr,total:sum.total+other.total,target:tsum||null,ach:null,gap:null,avg:null,share:compTot?1:null,st:{cls:'mute',txt:''}}]);
+  tr[tr.length-1].ach=tsum>0?list.reduce((s,x)=>s+(x.tgt&&x.tgt.total>0?x.total:0),0)/tsum*100:null;
+  tr[tr.length-1].gap=tsum>0?tsum-list.reduce((s,x)=>s+(x.tgt&&x.tgt.total>0?x.total:0),0):null;
+  // like for like month comparison per KAM
+  const pm=addMonth(P.ref,-1);const lf=P.partial;
+  const gp=groupBy(S.q.filter(r=>r.m===pm&&(!lf||+r.date.slice(8,10)<=P.dayN)&&(ch==='all'||r.ch===ch)),r=>r.kam),gc=groupBy(S.q.filter(r=>r.m===P.ref&&(ch==='all'||r.ch===ch)),r=>r.kam);
+  const val=(m,k)=>(m.get(k)||Z()).total;
+  const ks=S.roster.filter(k=>val(gp,k)>0||val(gc,k)>0).sort((a,b)=>val(gc,b)-val(gc,a));
+  const upN=ks.filter(k=>val(gc,k)>val(gp,k)).length;
+  const prevName=lf?`${mLabel(pm)} (days 1 to ${P.dayN})`:mLabel(pm);
+  const takeM=ks.length?`${upN} of ${ks.length} KAMs are ahead of ${lf?'the same days of ':''}${mLabel(pm)}`:'No KAM activity in these two months';
+  $('#p-kam').innerHTML=`
+  ${lead('Who is on track?',leadP)}
+  ${tiles}
+  <div class="card"><div class="eyebrow">KAM ranking</div><h3 class="take">Ranked by revenue won, ${esc(P.label)}</h3>
+    <div class="keyline"><span><i class="k-bar"></i>Bar fills toward that KAM’s own target</span>${P.partial?'<span><i class="k-tick"></i>Tick = how far through the month we are</span>':''}<span>Click a KAM to open their detail below</span></div>
+    ${ch!=='all'?'<p class="note">A category filter is on, so KAM targets are not shown (targets are set per KAM, not per category).</p>':''}
+    <div class="lbbox"><div class="lb-head"><span>#</span><span>KAM</span><span>Progress to target</span><span>Won / target</span><span>Done</span><span>Status</span></div>${rowsHtml}</div>
+    ${more('Full table with every column',`<div id="kamTable">${table(cols,tr)}</div>`)}
+  </div>
+  <div style="margin-top:14px">${chartCard('cKamMoM','Month on month, by KAM',esc(takeM),`Revenue won in ${esc(mLabel(P.ref))}${P.partial?' so far':''} against ${esc(prevName)}${P.partial?', so the comparison is like for like':''}.`,'Bar chart comparing each KAM revenue this month and last month','tall')}</div>
+  <div class="sec"><h2>One KAM in detail</h2><p>Pick a KAM in the ranking above or use the list.</p></div>
+  <div id="kdetail"></div>`;
+  const pick=e=>{const r=e.target.closest('[data-kam]');if(r&&r.dataset.kam&&!r.classList.contains('static')){S.focusKam=r.dataset.kam;renderKam();$('#kdetail').scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});}};
+  $('.lbbox').onclick=pick;$('#kamTable').onclick=pick;
+  chart('cKamMoM',{type:'bar',data:{labels:ks,datasets:[
+    {label:prevName,data:ks.map(k=>val(gp,k)),backgroundColor:T.ghost,borderRadius:3,maxBarThickness:34},
+    {label:mlab(P.ref),data:ks.map(k=>val(gc,k)),backgroundColor:T.total,borderRadius:3,maxBarThickness:34}]},
+    options:{scales:{y:yMoneyAx(),x:xCatAx({ticks:{autoSkip:false,maxRotation:55}})},plugins:{valueLabels:{fmt:takaC,only:[1],skipZero:true,minSlot:80},tooltip:tipMoney}}});
+  renderKamDetail(list,P);
+}
+function renderKamDetail(list,P){
+  const k=S.focusKam;const x=list.find(r=>r.kam===k);if(!x){$('#kdetail').innerHTML='';return;}
   const T=theme();
+  const opts=S.roster.map(n=>`<option ${n===k?'selected':''}>${esc(n)}</option>`).join('');
+  const ms=S.months.map(m=>({m,a:agg(S.q.filter(r=>r.m===m&&r.kam===k&&(F.ch==='all'||r.ch===F.ch))),t:monthTarget(m,k,F.ch)}));
+  const cust=groupBy(S.q.filter(r=>r.date>=P.from&&r.date<=P.to&&r.kam===k&&r.cust),r=>r.cust);
+  const topC=[...cust.entries()].sort((a,b)=>b[1].total-a[1].total).slice(0,8);
+  const lastT=[...ms].reverse().find(y=>y.t&&y.t.total>0);
+  const takeK=lastT?`${esc(k)} in ${esc(mLabel(lastT.m))}${isPartialMonth(lastT.m)?' so far':''}: ${pctS(lastT.a.total/lastT.t.total*100)} of the ${takaC(lastT.t.total)} target`:`${esc(k)} has no monthly target loaded`;
+  $('#kdetail').innerHTML=`<div class="card"><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><label class="small">Select KAM <select id="kSel" class="btn" style="margin-left:6px">${opts}</select></label>${pill(x.st)}<span class="small">${esc(P.label)}</span></div>
+    <div class="stats" style="margin-top:0">${stat('Revenue won',takaC(x.total),'Rank '+x.rank+' of '+list.length)}${stat('Work orders',num(x.n),x.avg==null?'':'Average '+taka(x.avg))}${stat('Target achieved',pctS(x.ach),x.target==null?'No target loaded':'Target '+taka(x.target))}${stat('Still to win',x.gap==null?'n/a':(x.gap>0?takaC(x.gap):'Target met'),'OTC '+takaC(x.otc)+', SaaS '+takaC(x.saas)+', MRR '+takaC(x.mrr))}</div>
+    <div class="grid two" style="margin-top:6px">
+      <div><div class="eyebrow">Month by month</div><h3 class="take">${takeK}</h3><div class="chartbox"><canvas id="cKd" role="img" aria-label="Revenue won per month for ${esc(k)} with target ticks"></canvas></div></div>
+      <div><div class="eyebrow">Largest customers in the period</div>${topC.length?table([{h:'Customer',l:true,f:r=>esc(r.c)},{h:'WOs',f:r=>num(r.n)},{h:'Total WO value',f:r=>taka(r.total)}],topC.map(([c,a])=>({c,...a}))):'<p class="small" style="margin-top:8px">No work orders in this period.</p>'}</div>
+    </div></div>`;
+  $('#kSel').onchange=e=>{S.focusKam=e.target.value;renderKam();};
+  chart('cKd',{type:'bar',data:{labels:ms.map(y=>mlabA(y.m)),datasets:[
+    {label:'Revenue won',data:ms.map(y=>y.a.total),backgroundColor:T.total,borderRadius:4,maxBarThickness:56,order:1},
+    {...tickMark(T.tick,ms.length),label:'Target',data:ms.map(y=>y.t&&y.t.total>0?y.t.total:null)}]},
+    options:{scales:{y:yMoneyAx(),x:xCatAx()},plugins:{valueLabels:{fmt:takaC,only:[0],skipZero:true},tooltip:tipMoney}}});
+}
+
+/* ========================= PAGE 3: PRODUCT ========================= */
+function renderProduct(){
+  const P=period();const rows=rowsFor(P,{ch:'all'});const a=agg(rowsFor(P));
+  const T=theme();
+  const chRows=rowsFor(P);
+  const g=groupBy(rows,r=>r.ch);const tot=agg(rows).total;
+  const order=[...CHANNELS,...[...g.keys()].filter(k=>!CHANNELS.includes(k))];
+  const pm=addMonth(P.ref,-1);
+  const gCur=groupBy(S.q.filter(r=>r.m===P.ref&&(F.kam==='all'||r.kam===F.kam)),r=>r.ch),gPrev=groupBy(S.q.filter(r=>r.m===pm&&(F.kam==='all'||r.kam===F.kam)),r=>r.ch);
+  const list=order.map(k=>{const x=g.get(k)||Z();const c=gCur.get(k)||Z(),p=gPrev.get(k)||Z();const tg=periodTarget(P,'all',k);const act=tg.covered.length?agg(rows.filter(r=>r.ch===k&&tg.covered.includes(r.m))):Z();
+    return {ch:k,...x,share:div(x.total,tot),avg:x.n?x.total/x.n:null,growth:p.total>0?(c.total-p.total)/p.total*100:null,target:tg.t?tg.t.total:null,ach:tg.t&&tg.t.total>0?act.total/tg.t.total*100:null};}).filter(x=>x.n>0||CHANNELS.includes(x.ch)).sort((x,y)=>y.total-x.total);
+  const pk=groupBy(chRows.filter(r=>r.saas>0||r.pkg),r=>r.pkg||'(no package)');
+  const isApi=n=>/api|sdk/i.test(n);
+  const pkList=[...pk.entries()].map(([n,x])=>({...x,pkg:n})).sort((x,y)=>y.saas-x.saas);
+  const apiSaas=pkList.filter(x=>isApi(x.pkg)).reduce((s,x)=>s+x.saas,0);
+  const ms=monthSeries();const labels=ms.map(x=>mlabA(x.m));
+  const L=list.filter(x=>x.n>0);
+  const P2=pkList.filter(x=>x.saas>0).slice(0,10);
+  const curM=agg(rowsMonth(P.ref)),prevM=agg(rowsMonth(pm));
+  const sSaas=share(a.saas,a.total),sOtc=share(a.otc,a.total);
+  const leadP=a.total>0?`SaaS plans are ${pct0(sSaas)} of revenue won and one-time OTC is ${pct0(sOtc)}. ${L[0]?esc(L[0].ch)+' is the biggest category.':''}`:'No revenue in this period.';
+  const takeStream=a.total>0?(sSaas>=sOtc?`SaaS plans lead with ${pct0(sSaas)} of revenue`:`One-time OTC leads with ${pct0(sOtc)} of revenue`):'No revenue in this period';
+  const mrrChg=(!isPartialMonth(P.ref)&&prevM.mrr>0)?`, ${spct0((curM.mrr-prevM.mrr)/prevM.mrr*100)} on ${mLabel(pm)}`:'';
+  const takeMrr=`MRR is ${takaC(curM.mrr)} in ${mLabel(P.ref)}${isPartialMonth(P.ref)?' so far':''}${mrrChg}`;
+  const takeCh=L[0]?`${esc(L[0].ch)} brings ${pct0(L[0].share*100)} of revenue`:'No revenue in this period';
+  const byQty=[...L].sort((x,y)=>y.n-x.n)[0];
+  const takeQty=byQty?`${esc(byQty.ch)} has the most work orders (${num(byQty.n)})`:'No work orders in this period';
+  const takePkg=P2[0]?`${esc(P2[0].pkg)} is the biggest SaaS package (${pct0(share(P2[0].saas,a.saas))} of SaaS)`:'No SaaS packages in this period';
+  const monthTable=table([{h:'Month',l:true,f:r=>esc(r.m)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'Total WO value',f:r=>taka(r.total)},{h:'MRR',f:r=>taka(r.mrr)}],ms.map(x=>({m:mlab(x.m),...x.a})));
+  $('#p-product').innerHTML=`
+  ${lead('What are we selling?',leadP)}
+  <div class="stats">
+    ${stat('One-time revenue (OTC)',takaC(a.otc),pctS(sOtc)+' of revenue. Devices and one-time.',T.otc)}
+    ${stat('SaaS plans',takaC(a.saas),pctS(sSaas)+' of revenue. API included.',T.saas)}
+    ${stat('MRR',takaC(a.mrr),'Recurring, shown separately',T.mrr)}
+    ${stat('Average revenue per work order',a.n?takaC(a.total/a.n):'n/a',plural(a.n,'work order'))}
+  </div>
+  <div class="banner">API revenue is already part of SaaS and is never added again. The export has no separate API amount, so API appears only as a SaaS package breakdown below${apiSaas>0?' ('+taka(apiSaas)+' of SaaS in API packages for this period)':' (no API package rows in this period)'}. MRR is tracked on its own and is not added to Total WO value, which matches the KAM Report.</div>
+  <div class="grid two">
+    ${chartCard('cPrStream','OTC and SaaS, by month',takeStream,'Revenue won per month in each stream.','Grouped bars of OTC and SaaS revenue per month')}
+    ${chartCard('cPrMrr','MRR, by month',esc(takeMrr),'Monthly recurring revenue. This is not part of Total WO value.','Bar chart of MRR per month')}
+    ${chartCard('cPrCh','Revenue by business category',takeCh,esc(P.label)+'. One-time OTC and SaaS plans stacked, with the total at the end.','Stacked horizontal bars of OTC and SaaS revenue per category','tall')}
+    ${chartCard('cPrQty','Work orders by category',takeQty,'How many qualifying work orders each category produced.','Horizontal bars of work orders per category','tall')}
+    <div style="grid-column:1/-1">${chartCard('cPrPkg','SaaS by package',takePkg,'Breakdown within SaaS. API packages are included in the SaaS total and are marked (API).','Horizontal bars of SaaS amount per package','tall')}</div>
+  </div>
+  ${more('Monthly numbers',monthTable)}
+  <div class="card" style="margin-top:14px"><div class="eyebrow">Category performance</div><h3 class="take">Growth and target by category</h3><p class="note">Growth compares ${esc(mLabel(P.ref))}${P.partial?' (month to date)':''} with ${esc(mLabel(pm))}. Category targets appear only when you load them (channel level targets were used before October 2026).</p><div id="chTable"></div></div>`;
+  $('#chTable').innerHTML=table([
+    {h:'Category',l:true,f:r=>esc(r.ch)},{h:'WOs',f:r=>num(r.n)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'MRR',f:r=>taka(r.mrr)},{h:'Total WO value',f:r=>taka(r.total)},{h:'Share',f:r=>pct(r.share==null?null:r.share*100)},
+    {h:'Avg per WO',f:r=>r.avg==null?'n/a':taka(r.avg)},{h:'Growth vs prev. month',f:r=>`<span class="${r.growth==null?'':r.growth>=0?'up':'down'}">${spct(r.growth)}</span>`},{h:'Target',f:r=>r.target==null?'n/a':taka(r.target)},{h:'Achievement',f:r=>pct(r.ach)}],list);
+  chart('cPrStream',{type:'bar',data:{labels,datasets:[
+    {label:'One-time (OTC)',data:ms.map(x=>x.a.otc),backgroundColor:T.otc,borderRadius:4,maxBarThickness:40},
+    {label:'SaaS plans',data:ms.map(x=>x.a.saas),backgroundColor:T.saas,borderRadius:4,maxBarThickness:40}]},
+    options:{scales:{y:yMoneyAx(),x:xCatAx()},plugins:{tooltip:tipMoney}}});
+  chart('cPrMrr',{type:'bar',data:{labels,datasets:[{label:'MRR',data:ms.map(x=>x.a.mrr),backgroundColor:T.mrr,borderRadius:4,maxBarThickness:60}]},
+    options:{scales:{y:yMoneyAx(),x:xCatAx()},plugins:{valueLabels:{fmt:takaC,skipZero:true},tooltip:tipMoney}}});
+  chart('cPrCh',{type:'bar',data:{labels:L.map(x=>x.ch),datasets:[
+    {label:'One-time (OTC)',data:L.map(x=>x.otc),backgroundColor:T.otc,borderColor:T.panel,borderWidth:2,borderRadius:3,maxBarThickness:26,stack:'s'},
+    {label:'SaaS plans',data:L.map(x=>x.saas),backgroundColor:T.saas,borderColor:T.panel,borderWidth:2,borderRadius:3,maxBarThickness:26,stack:'s'}]},
+    options:{indexAxis:'y',layout:{padding:{top:4,right:76}},scales:{x:Object.assign(xMoneyAx(),{stacked:true}),y:yCatAx({stacked:true})},plugins:{valueLabels:{fmt:takaC,stack:true},tooltip:tipH}}});
+  chart('cPrQty',{type:'bar',data:{labels:L.map(x=>x.ch),datasets:[{label:'Work orders',isNum:true,data:L.map(x=>x.n),backgroundColor:T.slate,borderRadius:4,maxBarThickness:26}]},
+    options:{indexAxis:'y',layout:{padding:{top:4,right:44}},scales:{x:{beginAtZero:true,border:{display:false},grid:{color:cssv('--line')},ticks:{precision:0,maxTicksLimit:6}},y:yCatAx()},plugins:{valueLabels:{fmt:num},tooltip:tipH}}});
+  chart('cPrPkg',{type:'bar',data:{labels:P2.map(x=>x.pkg+(isApi(x.pkg)?' (API)':'')),datasets:[{label:'SaaS amount',data:P2.map(x=>x.saas),backgroundColor:T.saas,borderRadius:4,maxBarThickness:26}]},
+    options:{indexAxis:'y',layout:{padding:{top:4,right:76}},scales:{x:xMoneyAx(),y:yCatAx()},plugins:{valueLabels:{fmt:takaC},tooltip:tipH}}});
+}
+
+/* ========================= PAGE 4: GROWTH ========================= */
+function renderGrowth(){
+  const P=period();const T=theme();
+  const ms=monthSeries();const labels=ms.map(x=>mlabA(x.m));
+  const comp=ms.map(x=>!isPartialMonth(x.m));
+  const gr=(k)=>ms.map((x,i)=>{if(i===0||!comp[i])return null;const p=ms[i-1].a[k];return p>0?(x.a[k]-p)/p*100:null;});
+  const gTot=gr('total'),gOtc=gr('otc'),gSaas=gr('saas'),gMrr=gr('mrr');
+  const achM=ms.map(x=>{if(!x.t||!(x.t.total>0))return null;return x.a.total/x.t.total*100;});
+  const avgM=ms.map(x=>x.a.n?x.a.total/x.a.n:null);
+  const nr=ms.map(x=>{const rs=rowsMonth(x.m);const ms0=x.m+'-01';let nw=Z(),rp=Z();for(const r of rs){const fs=r.cust&&S.firstSeen.get(r.cust.toLowerCase());(fs&&fs<ms0?rp:nw).n++;((fs&&fs<ms0)?rp:nw).total+=r.total;}return {nw,rp};});
+  const kamMonth=S.months.map(m=>groupBy(S.q.filter(r=>r.m===m&&(F.ch==='all'||r.ch===F.ch)),r=>r.kam));
+  const totK=groupBy(S.q.filter(r=>r.date>=P.from&&r.date<=P.to&&(F.ch==='all'||r.ch===F.ch)),r=>r.kam);
+  const rank=[...totK.entries()].sort((a,b)=>b[1].total-a[1].total);
+  const grand=rank.reduce((s,x)=>s+x[1].total,0);
+  const cum=n=>div(rank.slice(0,n).reduce((s,x)=>s+x[1].total,0),grand);
+  const top3=rank.slice(0,3).map(x=>x[0]);
+  const lastIdx=a=>{for(let i=a.length-1;i>=0;i--)if(a[i]!=null)return i;return -1;};
+  const iT=lastIdx(gTot),iA=lastIdx(achM),iS=lastIdx(gSaas.map((v,i)=>v!=null&&gOtc[i]!=null?v:null));
+  const refI=ms.length-1;
+  const cur=ms[refI]?ms[refI].a:Z();
+  const nrCur=nr[refI];
+  const takeMoM=iT>=0?`${mLabel(ms[iT].m)} revenue ${gTot[iT]>=0?'grew':'fell'} ${Math.abs(Math.round(gTot[iT]))}% on ${mLabel(ms[iT-1].m)}`:'Not enough completed months to show growth yet';
+  const takeAch=iA>=0?`${mLabel(ms[iA].m)}${isPartialMonth(ms[iA].m)?' so far':''}: ${pctS(achM[iA])} of target`:'No monthly targets are loaded yet';
+  const takeStream=iS>=0?`In ${mLabel(ms[iS].m)}, SaaS ${spct0(gSaas[iS])} and OTC ${spct0(gOtc[iS])}`:'Not enough completed months to compare streams';
+  const mrrI=lastIdx(gMrr);
+  const takeMrr=`MRR is ${takaC(cur.mrr)} in ${mLabel(P.ref)}${isPartialMonth(P.ref)?' so far':''}${mrrI>=0?`, ${spct0(gMrr[mrrI])} in ${mLabel(ms[mrrI].m)}`:''}`;
+  const prevAvg=avgM[refI-1];
+  const takeAvg=avgM[refI]!=null?`The average work order is worth ${takaC(avgM[refI])} in ${mLabel(P.ref)}${prevAvg!=null?`, against ${takaC(prevAvg)} in ${mLabel(ms[refI-1].m)}`:''}`:`No work orders in ${mLabel(P.ref)}`;
+  const nrTot=nrCur?nrCur.nw.total+nrCur.rp.total:0;
+  const takeNew=nrTot>0?`${pct0(nrCur.rp.total/nrTot*100)} of ${mLabel(P.ref)} revenue came from repeat customers`:`No revenue in ${mLabel(P.ref)} yet`;
+  const topN=rank.slice(0,5).map(x=>x[0]);
+  const topSorted=[...topN].sort((a,b)=>{const ia=S.kamOrder.indexOf(a),ib=S.kamOrder.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib);});
+  const colorOf=k=>k==='All others'?T.other:T.s[topSorted.indexOf(k)%5];
+  const takeKam=topN.length?`${esc(topN[0])} holds the largest share of ${esc(P.label)}`:'No work orders in this period';
+  const takeConc=cum(3)!=null?`The top 3 KAMs bring ${pct0(cum(3)*100)} of revenue`:'No work orders in this period';
+  const leadP=iT>=0?`${mLabel(ms[iT].m)} revenue ${gTot[iT]>=0?'grew':'fell'} ${Math.abs(Math.round(gTot[iT]))}% on the month before. ${cum(3)!=null?'The top 3 KAMs bring '+pct0(cum(3)*100)+' of revenue.':''}`:'Not enough completed months yet to show growth.';
+  const rowsT=ms.map((x,i)=>({m:mLabel(x.m)+(isPartialMonth(x.m)?' (MTD)':''),...x.a,avg:avgM[i],g:gTot[i],ach:achM[i],tg:x.t?x.t.total:null}));
+  $('#p-growth').innerHTML=`
+  ${lead('Are we growing?',leadP)}
+  <div class="banner">Growth rates use completed months only. The current month is month to date and is left out of every growth figure so it does not look like a collapse.</div>
+  <div class="stats">
+    ${stat('Top KAM share',pctS(cum(1)==null?null:cum(1)*100),rank[0]?esc(rank[0][0]):'No work orders')}
+    ${stat('Top 3 KAM share',pctS(cum(3)==null?null:cum(3)*100),top3.length?esc(top3.join(', ')):'No work orders')}
+    ${stat('Top 5 KAM share',pctS(cum(5)==null?null:cum(5)*100),esc(P.label))}
+  </div>
+  <div class="sec"><h2>Is revenue growing?</h2><p>Month on month change and progress against target.</p></div>
+  <div class="grid two">
+    ${chartCard('cGrMoM','Month on month revenue growth',esc(takeMoM),'Change in revenue won against the previous month.','Bar chart of month on month revenue growth')}
+    ${chartCard('cGrAch','Target achievement by month',esc(takeAch),'Bar is the share of target reached. The dark tick marks 100%.','Bar chart of target achievement per month')}
+  </div>
+  <div class="sec"><h2>What is driving it?</h2><p>Revenue streams and deal size.</p></div>
+  <div class="grid two">
+    ${chartCard('cGrStream','OTC and SaaS growth',esc(takeStream),'Month on month change in each stream.','Line chart of OTC and SaaS month on month growth')}
+    ${chartCard('cGrMrr','MRR by month',esc(takeMrr),'Monthly recurring revenue, not part of revenue won.','Bar chart of MRR per month')}
+    ${chartCard('cGrAvg','Average work order value',esc(takeAvg),'Revenue won divided by work orders, per month.','Line chart of average work order value per month')}
+    ${chartCard('cGrNew','New and repeat customers',esc(takeNew),'Repeat means the customer had an earlier order in this export. History starts in Sep 2025, so early months can over count new customers.','Stacked bars of revenue from new and repeat customers per month')}
+  </div>
+  <div class="sec"><h2>Who brings the revenue?</h2><p>Dependence on a few KAMs.</p></div>
+  <div class="grid two">
+    ${chartCard('cGrKam','Share of revenue by KAM',takeKam,'Each month’s revenue split by the top 5 KAMs of the period. Everyone else is grouped.','100 percent stacked bars of revenue share by KAM per month')}
+    ${chartCard('cGrConc','Revenue concentration',takeConc,'Cumulative share of revenue held by the top KAMs ('+esc(P.label)+').','Line chart of cumulative revenue share by top KAMs')}
+  </div>
+  ${more('Monthly summary table',`<div id="grTable"></div>`)}`;
+  const gColors=g=>g.map(v=>v==null||v>=0?T.good:T.bad);
+  chart('cGrMoM',{type:'bar',data:{labels,datasets:[{label:'Revenue growth',isPct:true,data:gTot,backgroundColor:gColors(gTot),borderRadius:4,maxBarThickness:56}]},
+    options:{scales:{y:yPctAx(),x:xCatAx()},plugins:{valueLabels:{fmt:spct0},tooltip:tipMoney}}});
+  chart('cGrAch',{type:'bar',data:{labels,datasets:[
+    {label:'Target achieved',isPct:true,data:achM,backgroundColor:T.total,borderRadius:4,maxBarThickness:56,order:1},
+    {...tickMark(T.tick,ms.length),label:'100% of target',isPct:true,data:achM.map(v=>v==null?null:100)}]},
+    options:{scales:{y:yPctAx({beginAtZero:true}),x:xCatAx()},plugins:{valueLabels:{fmt:pct0,only:[0]},tooltip:tipMoney}}});
+  const ln=(label,data,color)=>({label,isPct:true,data,borderColor:color,backgroundColor:color,pointBackgroundColor:color,pointBorderColor:T.panel,pointBorderWidth:2,pointRadius:5,pointHoverRadius:6,borderWidth:2,tension:0});
+  chart('cGrStream',{type:'line',data:{labels,datasets:[ln('OTC growth',gOtc,T.otc),ln('SaaS growth',gSaas,T.saas)]},
+    options:{scales:{y:yPctAx(),x:xCatAx()},plugins:{tooltip:tipMoney}}});
+  chart('cGrMrr',{type:'bar',data:{labels,datasets:[{label:'MRR',data:ms.map(x=>x.a.mrr),backgroundColor:T.mrr,borderRadius:4,maxBarThickness:56}]},
+    options:{scales:{y:yMoneyAx(),x:xCatAx()},plugins:{valueLabels:{fmt:takaC,skipZero:true},tooltip:tipMoney}}});
+  chart('cGrAvg',{type:'line',data:{labels,datasets:[Object.assign(ln('Average work order value',avgM,T.total),{isPct:false})]},
+    options:{scales:{y:yMoneyAx(),x:xCatAx()},plugins:{valueLabels:{fmt:takaC},tooltip:tipMoney}}});
+  chart('cGrNew',{type:'bar',data:{labels,datasets:[
+    {label:'Repeat customers',data:nr.map(x=>x.rp.total),backgroundColor:T.total,borderColor:T.panel,borderWidth:2,borderRadius:3,maxBarThickness:56,stack:'s'},
+    {label:'New customers',data:nr.map(x=>x.nw.total),backgroundColor:T.mrr,borderColor:T.panel,borderWidth:2,borderRadius:3,maxBarThickness:56,stack:'s'}]},
+    options:{scales:{x:xCatAx({stacked:true}),y:Object.assign(yMoneyAx(),{stacked:true})},plugins:{valueLabels:{fmt:takaC,stack:true},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+taka(c.parsed.y)+' ('+num((c.datasetIndex===0?nr[c.dataIndex].rp:nr[c.dataIndex].nw).n)+' WOs)'}}}}});
+  const series=[...topSorted,'All others'];
+  chart('cGrKam',{type:'bar',data:{labels,datasets:series.map(k=>({label:k,isPct:true,data:S.months.map((m,mi)=>{const gm=kamMonth[mi];const tm=[...gm.values()].reduce((s,x)=>s+x.total,0);if(!tm)return null;const v=k==='All others'?[...gm.entries()].filter(([n])=>!topN.includes(n)).reduce((s,[,x])=>s+x.total,0):(gm.get(k)||Z()).total;return v/tm*100;}),backgroundColor:colorOf(k),borderColor:T.panel,borderWidth:2,borderRadius:2,maxBarThickness:56,stack:'s'}))},
+    options:{scales:{x:xCatAx({stacked:true}),y:yPctAx({stacked:true,max:100})},plugins:{tooltip:tipMoney}}});
+  const cs=[];let run=0;rank.slice(0,Math.min(10,rank.length)).forEach((x,i)=>{run+=x[1].total;cs.push({n:i+1,v:grand?run/grand*100:0});});
+  chart('cGrConc',{type:'line',data:{labels:cs.map(x=>'Top '+x.n),datasets:[{label:'Cumulative share',isPct:true,data:cs.map(x=>x.v),borderColor:T.total,backgroundColor:T.total+'22',fill:true,pointBackgroundColor:T.total,pointBorderColor:T.panel,pointBorderWidth:2,pointRadius:5,borderWidth:2,tension:0}]},
+    options:{scales:{y:yPctAx({min:0,max:100}),x:xCatAx()},plugins:{valueLabels:{fmt:pct0,minSlot:44},tooltip:tipMoney}}});
+  $('#grTable').innerHTML=table([{h:'Month',l:true,f:r=>esc(r.m)},{h:'WOs',f:r=>num(r.n)},{h:'OTC',f:r=>taka(r.otc)},{h:'SaaS',f:r=>taka(r.saas)},{h:'MRR',f:r=>taka(r.mrr)},{h:'Total WO value',f:r=>taka(r.total)},{h:'Avg WO',f:r=>r.avg==null?'n/a':taka(r.avg)},{h:'MoM growth',f:r=>`<span class="${r.g==null?'':r.g>=0?'up':'down'}">${spct(r.g)}</span>`},{h:'Target',f:r=>r.tg==null?'n/a':taka(r.tg)},{h:'Achievement',f:r=>pct(r.ach)}],rowsT);
+}
+
+/* ========================= PAGE 5: ACTIONS ========================= */
+function renderActions(){
+  const P=period();const ch=F.ch;const T=theme();
+  const A=computeActions(P,ch);const {I,list,below,zero,gap}=A;
+  const urgent=I.filter(x=>x.sev==='bad').length;
+  const leadP=gap==null?'No target is loaded for this period, so the plan below covers movement and data gaps only.':(gap>0?`The company is ${takaC(gap)} short of target. ${urgent} ${urgent===1?'item needs':'items need'} action now.`:'The company has reached its target for this period.');
+  $('#p-actions').innerHTML=`
+  ${lead('What should we do next?',leadP)}
+  <div class="banner">Insights are generated from the data for ${esc(P.label)}${ch!=='all'?', category '+esc(ch):''}. Change the month or category above to refresh them.</div>
+  <div class="stats">
+    ${stat('KAMs below target',num(below.length),below.length?esc(below.slice(0,4).map(x=>x.kam).join(', ')):'None')}
+    ${stat('KAMs with zero work orders',num(zero.length),zero.length?esc(zero.slice(0,4).map(x=>x.kam).join(', '))+(zero.length>4?' and more':''):'None')}
+    ${stat('Revenue gap to target',gap==null?'n/a':(gap>0?takaC(gap):'Target met'),gap==null?'No target loaded':'Company level')}
+    ${stat('Insights raised',num(I.length),urgent+' need action now')}
+  </div>
+  <div class="card"><div class="eyebrow">Recommended actions</div><h3 class="take">Most urgent first</h3>
+    <ul class="ins">${I.map(x=>`<li><div>${SEV_PILL[x.sev]}</div><div><div class="t">${esc(x.text)}</div><div class="a"><b>Next step:</b> ${esc(x.action)}</div></div></li>`).join('')}</ul></div>
+  <div id="gapWrap" style="margin-top:14px"></div>`;
   const gl=list.filter(x=>x.gap!=null&&x.gap>0).sort((a,b)=>b.gap-a.gap);
-  chart('cAcGap',{type:'bar',data:{labels:gl.map(x=>x.kam),datasets:[{label:'Remaining gap',data:gl.map(x=>x.gap),backgroundColor:T.bad,borderRadius:3}]},options:{indexAxis:'y',scales:{x:yMoney,y:{ticks:{autoSkip:false}}},plugins:{legend:{display:false},tooltip:tipH}}});
-  const al=list.filter(x=>x.ach!=null);
-  chart('cAcAch',{type:'bar',data:{labels:al.map(x=>x.kam),datasets:[{label:'Achievement',isPct:true,data:al.map(x=>x.ach),backgroundColor:al.map(x=>x.ach>=100?T.good:x.ach>=60*P.elapsed?T.target:T.bad),borderRadius:3},...(P.partial?[{type:'line',label:'Month elapsed',isPct:true,data:al.map(()=>P.elapsed*100),borderColor:T.ink,borderDash:[6,5],pointRadius:0,borderWidth:1.5}]:[])]},options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'%'}},x:{ticks:{autoSkip:false,maxRotation:60}}},plugins:{tooltip:tipMoney}}});
+  if(gl.length){
+    $('#gapWrap').innerHTML=chartCard('cAcGap','Revenue gap by KAM',`${esc(gl[0].kam)} has the largest gap: ${takaC(gl[0].gap)}`,'Distance each KAM still has to cover to reach their target, largest first.','Horizontal bars of remaining revenue gap per KAM','tall');
+    chart('cAcGap',{type:'bar',data:{labels:gl.map(x=>x.kam),datasets:[{label:'Remaining gap',data:gl.map(x=>x.gap),backgroundColor:T.slate,borderRadius:4,maxBarThickness:24}]},
+      options:{indexAxis:'y',layout:{padding:{top:4,right:76}},scales:{x:xMoneyAx(),y:yCatAx()},plugins:{valueLabels:{fmt:takaC},tooltip:tipH}}});
+  }
 }
 
 /* ========================= PAGE 6: DATA HEALTH AND IMPORT ========================= */
@@ -674,33 +965,38 @@ function renderData(){
   const kamOpts=cur=>[UN,...S.roster].map(n=>`<option ${n===cur?'selected':''}>${esc(n)}</option>`).join('');
   const chRaw=[...new Set(S.all.map(r=>r.chRaw||'(blank)'))].sort();
   const chOpts=cur=>[...CHANNELS,'Support Request','Unassigned'].map(n=>`<option ${n===cur?'selected':''}>${esc(n)}</option>`).join('');
+  const issues=ck.filter(c=>c.sev!=='good'),passes=ck.filter(c=>c.sev==='good');
+  const allOk=refRows.every(r=>r.ok);
+  const ckCols=[{h:'Check',l:true,f:r=>esc(r.k)},{h:'Result',f:r=>`<span class="pill ${r.sev}">${r.sev==='good'?'Pass':r.n+' found'}</span>`},{h:'Detail',l:true,f:r=>`<span class="small" style="white-space:normal;display:inline-block;min-width:240px">${esc(r.d)}</span>`}];
   $('#p-data').innerHTML=`
+  ${lead('Can we trust the numbers?',`${passes.length} of ${ck.length} data checks pass${issues.length?', '+issues.length+' need a look':''}. ${allOk?'Totals match the official KAM Report.':'Some totals differ from the official KAM Report.'}`)}
   <div class="grid two">
-    <div class="card"><h3>Data checks</h3><p class="note">Run on the whole file and on the work orders counted under the current rules.</p>
-      ${table([{h:'Check',l:true,f:r=>esc(r.k)},{h:'Result',f:r=>`<span class="pill ${r.sev}">${r.sev==='good'?'Pass':r.n+' found'}</span>`},{h:'Detail',l:true,f:r=>`<span class="small" style="white-space:normal;display:inline-block;min-width:240px">${esc(r.d)}</span>`}],ck)}</div>
-    <div class="card"><h3>Reconciliation with the official KAM Report</h3><p class="note">Dashboard figure vs the official figure from KAM_Report.xlsx (5 Nov 2026), under the current rules.</p>
+    <div class="card"><div class="eyebrow">Data checks</div><h3 class="take">${issues.length?plural(issues.length,'check')+' to review':'Every check passes'}</h3><p class="note">Run on the whole file and on the work orders counted under the current rules.</p>
+      ${issues.length?table(ckCols,issues):''}
+      ${more(`Passing checks (${passes.length})`,table(ckCols,passes),!issues.length)}</div>
+    <div class="card"><div class="eyebrow">Reconciliation</div><h3 class="take">${allOk?'Matches the official KAM Report':'Differs from the official KAM Report'}</h3><p class="note">Dashboard figure vs the official figure from KAM_Report.xlsx (5 Nov 2026), under the current rules.</p>
       ${table([{h:'Match',f:r=>r.ok?'<span class="ok">Matches</span>':'<span class="fail">Differs</span>'},{h:'Month',l:true,f:r=>esc(r.m)},{h:'WOs',f:r=>`${r.a.n} vs ${r.r?r.r.n:'n/a'}`},{h:'OTC',f:r=>`${taka(r.a.otc)} vs ${r.r?taka(r.r.otc):'n/a'}`},{h:'SaaS',f:r=>`${taka(r.a.saas)} vs ${r.r?taka(r.r.saas):'n/a'}`},{h:'MRR',f:r=>`${taka(r.a.mrr)} vs ${r.r?taka(r.r.mrr):'n/a'}`}],refRows)}
       <p class="small" style="margin-top:10px">The earlier screenshot of the report showed October at 74 WOs and ${taka(4178840)}, which was taken before later October orders and edits; the file used here shows 80 WOs and ${taka(4221840.2)}. September in that screenshot (SaaS ${taka(454945)}) also differs from the export (SaaS ${taka(agg(rowsMonth('2026-09',{kam:'all',ch:'all'})).saas)}), most likely a curated override in Odoo. Always compare against an export taken on the same day.</p></div>
   </div>
-  <div class="sec">Reporting rules</div>
+  <div class="sec"><h2>Reporting rules</h2><p>These decide which work orders are counted everywhere in the dashboard.</p></div>
   <div class="card" id="rulesCard"><p class="note">Defaults copy the official report: SA requisition date from 1 Jul 2026, ticket status SA Done, support requests excluded. Tick more statuses to include cancelled, draft or pending work orders.</p>
     <div class="rules"><div><b>Ticket status counted</b>${allT.map(v=>chk('ticket',v,CFG.tickets.has(v))).join('')}</div><div><b>Order status counted</b>${allS.map(v=>chk('order',v,CFG.orders.has(v))).join('')}<div class="small" style="margin-top:4px">Quotation is a draft order. Cancelled is cancelled.</div></div>
     <div><b>Other</b><label class="chk"><input type="checkbox" id="rSupport" ${CFG.excludeSupport?'checked':''}> Exclude Support Request channel</label><label class="chk" style="margin-top:8px">Start date <input type="date" id="rStart" value="${CFG.start}" style="margin-left:8px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--panel)"></label></div></div></div>
   <div class="grid two" style="margin-top:14px">
-    <div class="card"><h3>KAM name mapping</h3><p class="note">Names that are not in the roster are grouped as Other / Unassigned. Map typos or alternate spellings to a KAM.</p>
+    <div class="card"><div class="eyebrow">KAM name mapping</div><p class="note">Names that are not in the roster are grouped as Other / Unassigned. Map typos or alternate spellings to a KAM.</p>
       ${unmapped.length?`<div class="mapgrid">${unmapped.map(n=>`<label>${esc(n)}<select data-kmap="${esc(n)}">${kamOpts(MAP.kam[n]!==undefined?MAP.kam[n]:UN)}</select></label>`).join('')}</div>`:'<p class="small">Nothing to map.</p>'}
       <p class="small" style="margin-top:8px">Shahin is mapped to Shahinur as an assumed typo. Change it above if that is wrong.</p></div>
-    <div class="card"><h3>Business category mapping</h3><p class="note">Raw sales channel from Odoo to your reporting categories.</p>
+    <div class="card"><div class="eyebrow">Business category mapping</div><p class="note">Raw sales channel from Odoo to your reporting categories.</p>
       <div class="mapgrid">${chRaw.filter(c=>c!=='(blank)').map(n=>`<label>${esc(n)}<select data-cmap="${esc(n)}">${chOpts(MAP.channel[n]||n)}</select></label>`).join('')}</div></div>
   </div>
-  <div class="sec">Import data</div>
-  <div class="card"><h3>Load a new Odoo export</h3><p class="note">Upload an Excel or CSV export. The file stays in your browser and is not saved or sent anywhere. Current source: <b>${esc(SRC.meta.name||'file')}</b>.</p>
+  <div class="sec"><h2>Import data</h2><p>Load a newer export or a targets file. Files stay in your browser.</p></div>
+  <div class="card"><div class="eyebrow">Work orders</div><h3 class="take">Load a new Odoo export</h3><p class="note">Upload an Excel or CSV export. The file is not saved or sent anywhere. Current source: <b>${esc(SRC.meta.name||'file')}</b>.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="file" id="upRows" accept=".xlsx,.xls,.csv"><button class="btn" id="btnEmbedded" type="button">Back to embedded export</button><button class="btn" id="btnOdoo" type="button">Odoo API</button></div>
     <div id="mapBox"></div><div id="upMsg" class="small" style="margin-top:8px"></div></div>
-  <div class="card" style="margin-top:14px"><h3>Load targets</h3><p class="note">Upload a file with columns Month, Name (KAM or channel), OTC, SaaS, MRR, Total, and optionally Level (KAM or Channel). Month can be 2026-10, 2026-10-01 or a date. Uploaded targets replace the current ones.</p>
+  <div class="card" style="margin-top:14px"><div class="eyebrow">Targets</div><h3 class="take">Load targets</h3><p class="note">Upload a file with columns Month, Name (KAM or channel), OTC, SaaS, MRR, Total, and optionally Level (KAM or Channel). Month can be 2026-10, 2026-10-01 or a date. Uploaded targets replace the current ones.</p>
     <input type="file" id="upTargets" accept=".xlsx,.xls,.csv"><div id="tMsg" class="small" style="margin-top:8px"></div></div>
-  <div class="card" style="margin-top:14px"><h3>How to connect Odoo later</h3><p class="note">The dashboard reads data through one small source layer, so switching source does not change any page.</p>
-    <ol class="small" style="margin:0;padding-left:18px;line-height:1.6"><li><b>Now:</b> export Sales Orders from Odoo as XLSX (the same columns as the embedded file) and upload it here. Targets go in a second file.</li><li><b>Automatic file refresh:</b> ask IT to schedule the export to an approved SharePoint or OneDrive folder, then load it into the Power BI version with its scheduled refresh (needs Power BI Pro or Premium and a gateway or cloud connector).</li><li><b>Direct API:</b> needs an Odoo plan with external API access and an administrator to create a read only API user and key. Never paste the key anywhere in this dashboard or in chat. The API source plugs in as <code>DataSources.odooApi</code>.</li></ol></div>`;
+  ${more('How to connect Odoo later',`<p class="note">The dashboard reads data through one small source layer, so switching source does not change any page.</p>
+    <ol class="small" style="margin:0;padding-left:18px;line-height:1.6"><li><b>Now:</b> export Sales Orders from Odoo as XLSX (the same columns as the embedded file) and upload it here. Targets go in a second file.</li><li><b>Automatic file refresh:</b> ask IT to schedule the export to an approved SharePoint or OneDrive folder, then load it into the Power BI version with its scheduled refresh (needs Power BI Pro or Premium and a gateway or cloud connector).</li><li><b>Direct API:</b> needs an Odoo plan with external API access and an administrator to create a read only API user and key. Never paste the key anywhere in this dashboard or in chat. The API source plugs in as <code>DataSources.odooApi</code>.</li></ol>`)}`;
   $('#rulesCard').onchange=e=>{const t=e.target;
     if(t.dataset.grp){const set=t.dataset.grp==='ticket'?CFG.tickets:CFG.orders;t.checked?set.add(t.dataset.v):set.delete(t.dataset.v);}
     else if(t.id==='rSupport')CFG.excludeSupport=t.checked;else if(t.id==='rStart'&&t.value)CFG.start=t.value;else return;
@@ -713,6 +1009,7 @@ function renderData(){
   $('#btnOdoo').onclick=async()=>{try{await loadSource('odooApi');}catch(err){$('#upMsg').textContent=err.message;}};
 }
 async function readSheet(file){
+  await ensureXLSX();
   const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array',cellDates:true});
   const ws=wb.Sheets[wb.SheetNames[0]];
   return XLSX.utils.sheet_to_json(ws,{defval:null,raw:true});
@@ -749,7 +1046,6 @@ async function applyMapping(){
   if(!map.status)rows.forEach(r=>r.status='Sales Order');
   const dates=rows.map(r=>r.date).filter(Boolean).sort();
   const parsed={rows,targets:SRC.targets,meta:{name:PENDING.name+' (uploaded)',takenAt:'',asOf:dates.length?dates[dates.length-1]:S.asOf}};
-  // add any new status values to the counted lists when columns were missing
   await loadSource('file',parsed);
   $('#upMsg').textContent='Loaded '+num(rows.length)+' rows from '+PENDING.name+'.';
 }
@@ -781,11 +1077,15 @@ function fillFilters(){
   const chs=[...new Set([...CHANNELS,...S.q.map(r=>r.ch)])];
   $('#fCh').innerHTML=opt('all','All categories',F.ch==='all')+chs.map(k=>opt(k,k,F.ch===k)).join('');
   const P=period();$('#fFrom').value=F.from||P.from;$('#fTo').value=F.to||P.to;
+  $('#rangeWrap').hidden=!!F.month;
 }
-function setMonth(m){F.month=m;if(m){F.from='';F.to='';}}
+function setMonth(m){
+  if(m){F.month=m;F.from='';F.to='';return;}
+  const P=period();F.from=P.from;F.to=P.to;F.month='';   // keep today's range and let the person edit it
+}
 function renderBanners(){
   const P=period();const b=[];
-  if(P.partial)b.push(`<div class="banner">Showing ${esc(mLabel(P.ref))} as a month in progress: day ${P.dayN} of ${P.dim}. Data as of ${esc(S.asOf)}.</div>`);
+  if(P.partial&&currentPage!=='data')b.push(`<div class="banner">${esc(mLabel(P.ref))} is still in progress: day ${P.dayN} of ${P.dim}, data as of ${esc(S.asOf)}. Month to date figures are compared with the same days of the previous month where that matters.</div>`);
   const {t,covered}=periodTarget(P,F.kam,F.ch);
   if(!t&&(currentPage==='overview'||currentPage==='kam'))b.push(`<div class="banner warn">No target is loaded for ${esc(P.label)}${F.kam!=='all'&&F.ch!=='all'?' at KAM and channel level':''}. Achievement and gap show n/a. Targets are loaded for ${[...new Set(SRC.targets.map(x=>x.month))].sort().map(mLabel).join(' and ')||'no months'}; before October 2026 the company set category targets, which you can load in the import page.</div>`);
   else if(t&&covered.length<P.months.length)b.push(`<div class="banner warn">Targets exist only for ${covered.map(mLabel).join(', ')}. Achievement for this range is calculated on those months only.</div>`);
@@ -793,8 +1093,11 @@ function renderBanners(){
   $('#banners').innerHTML=b.join('');
 }
 function renderAll(){
-  $('#srcline').textContent=`Source: ${SRC.meta.name}${SRC.meta.takenAt?', exported '+SRC.meta.takenAt:''}. Counting work orders with SA requisition from ${CFG.start}, ticket status ${[...CFG.tickets].join(' or ')}${CFG.excludeSupport?', excluding support requests':''}. Amounts in Bangladeshi Taka.`;
-  $('#lblKam').style.opacity=currentPage==='kam'?.45:1;
+  const P=period();
+  $('#srcline').textContent=`Source: ${SRC.meta.name}${SRC.meta.takenAt?', exported '+SRC.meta.takenAt:''}. Counting work orders with SA requisition from ${CFG.start} and ticket status ${[...CFG.tickets].join(' or ')}${CFG.excludeSupport?', support requests excluded':''}. Amounts in Bangladeshi Taka (৳).`;
+  $('#ctx').innerHTML=`Showing <b>${esc(P.label)}</b> · <b>${F.kam==='all'?'All KAMs':esc(F.kam)}</b> · <b>${F.ch==='all'?'All categories':esc(F.ch)}</b>`;
+  const kamPage=currentPage==='kam';
+  $('#fKam').disabled=kamPage;$('#lblKam').title=kamPage?'This page ranks every KAM, so the KAM filter is off here':'';
   renderBanners();
   const fn={overview:renderOverview,kam:renderKam,product:renderProduct,growth:renderGrowth,actions:renderActions,data:renderData}[currentPage];
   try{fn();}catch(err){console.error(err);$('#p-'+currentPage).innerHTML='<div class="banner warn">This page could not be drawn: '+esc(err.message)+'</div>';}
@@ -804,6 +1107,7 @@ function show(page,fromHash){
   document.querySelectorAll('[data-pg]').forEach(s=>s.classList.toggle('hide',s.id!=='p-'+page));
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.page===page?'true':'false'));
   $('#filters').classList.toggle('hide',page==='data');
+  $('#ctx').classList.toggle('hide',page==='data');
   if(!fromHash){try{history.replaceState(null,'','#'+page);}catch(e){location.hash=page;}}
   renderAll();
 }
@@ -811,14 +1115,15 @@ async function loadSource(name,arg){
   const res=await DataSources[name].load(arg);
   SRC={rows:res.rows,targets:res.targets,meta:res.meta||{}};
   S.asOf=SRC.meta.asOf||S.asOf;
-  // uploaded files may carry status values the defaults do not know; keep counted sets as is unless columns were absent
   normalise();
   const present=new Set(S.all.map(r=>r.ticket));if(![...CFG.tickets].some(t=>present.has(t))){CFG.tickets=new Set(present);applyRules();}
   F.kam='all';F.ch='all';F.from='';F.to='';F.month='';
   fillFilters();renderAll();
 }
+const PAGES=['overview','kam','product','growth','actions','data'];
 function initEvents(){
   $('#tabs').onclick=e=>{const b=e.target.closest('button[data-page]');if(b)show(b.dataset.page);};
+  $('#app').addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){show(g.dataset.go);window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});}});
   $('#fMonth').onchange=e=>{setMonth(e.target.value);fillFilters();renderAll();};
   $('#fFrom').onchange=e=>{if(!e.target.value)return;F.from=e.target.value;F.month='';if(!F.to)F.to=S.asOf;fillFilters();renderAll();};
   $('#fTo').onchange=e=>{if(!e.target.value)return;F.to=e.target.value;F.month='';if(!F.from)F.from=CFG.start;fillFilters();renderAll();};
@@ -826,16 +1131,16 @@ function initEvents(){
   $('#fCh').onchange=e=>{F.ch=e.target.value;renderAll();};
   $('#fReset').onclick=()=>{F.kam='all';F.ch='all';F.from='';F.to='';F.month='';fillFilters();renderAll();};
   $('#btnRules').onclick=()=>show('data');
+  $('#btnGloss').onclick=()=>{const g=$('#gloss');g.hidden=!g.hidden;$('#btnGloss').setAttribute('aria-expanded',String(!g.hidden));};
   $('#btnTheme').onclick=()=>{const cur=document.documentElement.getAttribute('data-theme');const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.setAttribute('data-theme',dark?'light':'dark');renderAll();};
   matchMedia('(prefers-color-scheme: dark)').addEventListener&&matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>renderAll());
-  window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(['overview','kam','product','growth','actions','data'].includes(h)&&h!==currentPage)show(h,true);});
-  let rt;window.addEventListener('resize',()=>{});
+  window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(PAGES.includes(h)&&h!==currentPage)show(h,true);});
 }
 (async function boot(){
   initEvents();
   await loadSource('embedded');
   const h=location.hash.slice(1);
-  if(['overview','kam','product','growth','actions','data'].includes(h))show(h,true);
+  if(PAGES.includes(h))show(h,true);
 })();
 </script>
 
